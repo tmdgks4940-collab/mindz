@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마인즈마케팅 블로그 체험단 관리</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0f0f12;--sf:#17171d;--sf2:#1e1e27;--bd:#2a2a38;--a:#5b5ef4;--a2:#38d9a9;--a3:#f7c948;--t:#e8e8f0;--m:#7a7a9a;--dn:#f06565;--end:#a78bfa;--pay:#40c97f;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+header{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0;z-index:200;}
+.logo{font-size:15px;font-weight:700;}.logo span{color:var(--a);}
+.logo small{font-size:10px;color:var(--m);font-weight:400;margin-left:6px;}
+.chrome-tabbar{display:flex;align-items:flex-end;padding:5px 14px 0;background:var(--sf);border-bottom:2px solid var(--bd);flex-shrink:0;overflow-x:auto;scrollbar-width:none;gap:2px;}
+.chrome-tabbar::-webkit-scrollbar{display:none;}
+.ct{display:flex;align-items:center;gap:5px;padding:6px 12px 7px;border-radius:8px 8px 0 0;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;border-bottom:none;background:rgba(255,255,255,.04);color:var(--m);font-family:inherit;white-space:nowrap;min-width:90px;max-width:180px;transition:all .15s;margin-bottom:-1px;}
+.ct:hover{background:rgba(255,255,255,.07);color:var(--t);}
+.ct.active{background:var(--bg);color:var(--a);border-color:var(--bd);font-weight:700;}
+.ct-label{flex:1;overflow:hidden;text-overflow:ellipsis;}
+.ct-x{width:15px;height:15px;border-radius:50%;border:none;background:transparent;color:transparent;font-size:11px;cursor:pointer;padding:0;font-family:inherit;transition:all .15s;}
+.ct:hover .ct-x,.ct.active .ct-x{color:var(--m);}
+.ct-x:hover{background:var(--dn)!important;color:#fff!important;}
+.ct-add{padding:5px 10px 6px;border-radius:6px 6px 0 0;border:none;background:transparent;color:var(--m);cursor:pointer;font-size:18px;line-height:1;transition:all .15s;font-family:inherit;align-self:flex-end;}
+.ct-add:hover{color:var(--a);background:rgba(91,94,244,.1);}
+.app-body{display:flex;flex:1;overflow:hidden;}
+.panel{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+.panel+.panel{border-left:2px solid var(--bd);}
+.panel-nav{display:flex;align-items:center;gap:1px;padding:4px 8px;background:var(--sf);border-bottom:1px solid var(--bd);overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.panel-nav::-webkit-scrollbar{display:none;}
+.pnav-tab{padding:4px 8px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--m);transition:all .15s;font-family:inherit;white-space:nowrap;}
+.pnav-tab:hover{color:var(--t);}
+.pnav-tab.active{background:var(--a);color:#fff;}
+.panel-close{margin-left:auto;padding:3px 7px;border-radius:5px;border:none;background:transparent;color:var(--m);cursor:pointer;font-size:13px;font-family:inherit;flex-shrink:0;}
+.panel-close:hover{color:var(--dn);}
+.panel-content{flex:1;overflow-y:auto;padding:14px 16px;}
+.stitle{font-size:16px;font-weight:700;margin-bottom:2px;}
+.ssub{color:var(--m);font-size:11px;margin-bottom:10px;}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px;}
+.ctitle{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;}
+.lbl{font-size:11px;color:var(--m);display:block;margin-bottom:2px;}
+input,textarea,select{background:var(--sf2);border:1px solid var(--bd);border-radius:7px;color:var(--t);font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:6px 9px;outline:none;transition:border .15s;width:100%;}
+input:focus,textarea:focus,select:focus{border-color:var(--a);}
+textarea{resize:vertical;}select option{background:var(--sf2);}
+.btn{padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;font-family:inherit;}
+.btn-p{background:var(--a);color:#fff;}.btn-p:hover{opacity:.88;}
+.btn-s{background:var(--sf2);color:var(--t);border:1px solid var(--bd);}.btn-s:hover{border-color:var(--a);color:var(--a);}
+.btn-g{background:var(--a2);color:#0f0f12;}.btn-g:hover{opacity:.85;}
+.btn-d{background:transparent;color:var(--dn);border:1px solid rgba(240,101,101,.3);}.btn-d:hover{background:var(--dn);color:#fff;border-color:var(--dn);}
+.btn-o{background:#ff8c00;color:#fff;}.btn-o:hover{opacity:.85;}
+.btn-sm{padding:4px 9px;font-size:11px;}.btn-xs{padding:2px 7px;font-size:10px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:900px){.g4,.g5{grid-template-columns:1fr 1fr 1fr;}}
+.fg{display:flex;flex-direction:column;gap:2px;}
+.fl{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:6px 7px;color:var(--m);font-weight:500;border-bottom:1px solid var(--bd);font-size:11px;white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:var(--t);}
+td{padding:6px 7px;border-bottom:1px solid rgba(42,42,56,.4);vertical-align:middle;}
+tbody tr:hover td{background:rgba(255,255,255,.018);}
+.clickrow td{cursor:pointer;}
+.mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--m);}
+.qpanel{background:var(--sf2);border:1px solid var(--bd);border-radius:9px;padding:12px;margin-bottom:10px;}
+.qtitle{font-size:11px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.empty{text-align:center;padding:24px;color:var(--m);}
+.empty-icon{font-size:24px;margin-bottom:4px;}.empty-text{font-size:11px;}
+.abar{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:5px;}
+.fbar{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
+.fbtn{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--sf2);color:var(--m);transition:all .15s;font-family:inherit;}
+.fbtn:hover{border-color:var(--a);color:var(--a);}
+.fbtn.on{background:var(--a);border-color:var(--a);color:#fff;}
+.notice{font-size:11px;padding:5px 9px;border-radius:5px;margin-bottom:7px;border-left:3px solid;}
+.n-i{background:rgba(91,94,244,.1);border-color:var(--a);color:var(--a);}
+.n-ok{background:rgba(56,217,169,.1);border-color:var(--a2);color:var(--a2);}
+.n-w{background:rgba(247,201,72,.1);border-color:var(--a3);color:var(--a3);}
+.infobox{font-size:11px;color:var(--m);padding:6px 9px;background:var(--sf2);border-radius:7px;border-left:3px solid var(--a3);line-height:1.6;margin-bottom:6px;}
+a.bl{color:var(--a);text-decoration:none;font-size:11px;}a.bl:hover{text-decoration:underline;}
+.toast{position:fixed;bottom:16px;right:16px;background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:8px 13px;font-size:12px;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;max-width:300px;}
+.toast.on{opacity:1;transform:translateY(0);}
+.memo-list{display:flex;flex-direction:column;gap:2px;margin-bottom:5px;}
+.memo-item{background:var(--sf);border-radius:5px;padding:4px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+.memo-date{color:var(--m);font-size:10px;font-family:'DM Mono',monospace;}
+.pager{display:flex;gap:3px;align-items:center;flex-wrap:wrap;margin-top:6px;}
+.pager-btn{padding:2px 7px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--sf2);color:var(--m);font-family:inherit;transition:all .15s;}
+.pager-btn.on,.pager-btn:hover{background:var(--a);border-color:var(--a);color:#fff;}
+.overdue td{background:rgba(240,101,101,.07)!important;}
+.sri{display:flex;justify-content:space-between;align-items:center;padding:7px 9px;border-bottom:1px solid var(--bd);font-size:12px;}
+.sri:hover{background:rgba(255,255,255,.03);}
+.xmark{color:var(--dn);font-size:11px;margin-left:3px;font-weight:700;}
+.idx-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
+.st-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}
+.mail-edit{background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:10px;font-size:12px;line-height:1.9;color:var(--t);width:100%;min-height:240px;resize:vertical;font-family:'Noto Sans KR',sans-serif;}
+.tmpl-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
+.tb{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:2px solid var(--bd);background:var(--sf2);color:var(--m);transition:all .15s;font-family:inherit;}
+.tb.on{border-color:var(--a);background:rgba(91,94,244,.15);color:var(--a);}
+.check-all-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--bd);font-size:11px;font-weight:600;color:var(--m);background:var(--sf);}
+.check-bl-list{max-height:240px;overflow-y:auto;border:1px solid var(--bd);border-radius:7px;}
+.check-bl-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid rgba(42,42,56,.3);font-size:12px;cursor:pointer;}
+.check-bl-item:hover{background:rgba(255,255,255,.03);}
+.check-bl-item input[type=checkbox]{width:14px;height:14px;accent-color:var(--a);}
+.greeting-chip{display:inline-flex;align-items:center;gap:4px;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;transition:all .15s;}
+.greeting-chip:hover{border-color:var(--a);color:var(--a);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-day-name{text-align:center;font-size:10px;color:var(--m);padding:4px 0;font-weight:600;}
+.cal-day{min-height:65px;background:var(--sf2);border-radius:5px;padding:4px;font-size:11px;border:1px solid var(--bd);cursor:pointer;transition:all .15s;}
+.cal-day:hover{border-color:var(--a);}
+.cal-day.today{border-color:var(--a);background:rgba(91,94,244,.08);}
+.cal-day.other-month{opacity:.4;}
+.cal-day-num{font-weight:600;margin-bottom:2px;}
+.cal-event{border-radius:3px;padding:1px 4px;font-size:9px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
+.cal-event.visit{background:var(--a2);color:#0f0f12;}
+.cal-event.contract{background:var(--a3);color:#0f0f12;}
+.cal-event.custom{background:var(--end);}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cal-nav button{padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--bd);background:var(--sf2);color:var(--t);font-family:inherit;}
+.cal-nav button:hover{border-color:var(--a);color:var(--a);}
+.cal-title{font-size:15px;font-weight:700;flex:1;text-align:center;}
+.kw-item{background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:9px 11px;margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.kw-item:hover,.kw-item.selected{border-color:var(--a);}
+.kw-item.selected{background:rgba(91,94,244,.08);}
+.kw-name{font-size:13px;font-weight:600;margin-bottom:3px;}
+.kw-meta{font-size:11px;color:var(--m);}
+.prog-biz-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:var(--sf);border:1px solid var(--bd);border-radius:7px 7px 0 0;cursor:pointer;}
+.prog-biz-hdr:hover{background:rgba(255,255,255,.03);}
+.prog-biz-body{border:1px solid var(--bd);border-top:none;border-radius:0 0 7px 7px;overflow:hidden;}
+.prog-st-bar{display:flex;gap:3px;flex-wrap:wrap;padding:6px 9px;background:var(--sf2);border-bottom:1px solid var(--bd);}
+#loading{position:fixed;inset:0;background:rgba(15,15,18,.85);z-index:9998;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;}
+#loading.hide{display:none;}
+.spinner{width:36px;height:36px;border:3px solid var(--bd);border-top:3px solid var(--a);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><div style="font-size:12px;color:var(--m);">Firebase 연결 중...</div></div>
+<div id="toast" class="toast"></div>
+<header>
+  <div class="logo">마인즈<span>마케팅</span><small>블로그 체험단 관리</small></div>
+  <div class="fl"><span id="sync-dot" style="font-size:10px;color:var(--m);">●</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m);">v9.1</span></div>
+</header>
+<div class="chrome-tabbar" id="ctbar"></div>
+<div class="app-body" id="appbody"></div>
+<script>
+// ════════════════════════════════════════════
+// FIREBASE CONFIG - 여기에 입력하세요
+// ════════════════════════════════════════════
+const FB_CFG={
+  apiKey:"AIzaSyA8KN-uDlQydPoThq8koHxYkQSrRiQWGQI",
+  authDomain:"mindz-blogger.firebaseapp.com",
+  projectId:"mindz-blogger",
+  storageBucket:"mindz-blogger.firebasestorage.app",
+  messagingSenderId:"266278944187",
+  appId:"1:266278944187:web:90af2f4126e2ebe294d89e"
+};
+let db;
+try{firebase.initializeApp(FB_CFG);db=firebase.firestore();}catch(e){console.warn(e);}
+
+// ════ STATE ════
+let NEWB=[],EXISTB=[],BIZ=[],BIZB=[],KWDS=[],CALEVENTS=[];
+let mailGreetings=JSON.parse(localStorage.getItem('mm_greet')||'[]');
+let progressFilters={};
+let recState={};
+const PER=20;
+const STATUSES=['신규','수락','거절','구글폼요청','예약안내','일정조율','일정확정','방문','완료','종료'];
+const IDX_LIST=['준최1','준최2','준최3','준최4','준최5','준최6','최적1','최적2','최적3'];
+const PAGE_DEFS=[
+  {k:'nb',l:'신규 블로거'},{k:'eb',l:'기존 블로거'},{k:'biz4',l:'업체별 블로거'},
+  {k:'mail',l:'메일 작성'},{k:'prog',l:'진행 현황'},{k:'excel',l:'엑셀 내보내기'},
+  {k:'cal',l:'일정 관리'},{k:'bizm',l:'업체 관리'},{k:'kwm',l:'키워드 관리'},
+  {k:'kwrec',l:'키워드 추천'},{k:'set',l:'⚙ 설정'},
+];
+
+// ════ CHROME TAB + PANEL SYSTEM ════
+let panels=[];
+let panelCounter=0;
+
+function addPanel(pageKey){
+  const id='p'+(++panelCounter);
+  panels.push({id,pageKey});
+  renderChromeTabBar();
+  renderAppBody();
+  return id;
+}
+
+function removePanel(id){
+  if(panels.length<=1){toast('최소 1개 패널 필요','var(--a3)');return;}
+  panels=panels.filter(p=>p.id!==id);
+  renderChromeTabBar();renderAppBody();
+}
+
+function setPanelPage(id,pageKey){
+  const p=panels.find(p=>p.id===id);if(!p)return;
+  p.pageKey=pageKey;
+  renderChromeTabBar();renderAppBody();
+}
+
+function renderChromeTabBar(){
+  const bar=E('ctbar');if(!bar)return;
+  bar.innerHTML=panels.map((p,i)=>{
+    const def=PAGE_DEFS.find(d=>d.k===p.pageKey)||{l:p.pageKey};
+    return`<div class="ct${i===0?' active':''}" onclick="ctClick(this)" data-pid="${p.id}">
+      <span class="ct-label">${def.l}</span>
+      <button class="ct-x" onclick="event.stopPropagation();removePanel('${p.id}')" title="닫기">×</button>
+    </div>`;
+  }).join('')+`<button class="ct-add" onclick="addPanel('nb')" title="새 패널 추가">+</button>`;
+}
+
+function ctClick(tab){
+  document.querySelectorAll('.ct').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  const pid=tab.dataset.pid;
+  const el=E(pid);if(el)el.scrollIntoView({behavior:'smooth',inline:'nearest'});
+}
+
+function renderAppBody(){
+  const body=E('appbody');if(!body)return;
+  body.innerHTML=panels.map(p=>buildPanelHTML(p)).join('');
+  panels.forEach(p=>setTimeout(()=>onPageInit(p.id,p.pageKey),10));
+}
+
+function buildPanelHTML({id,pageKey}){
+  const showClose=panels.length>1;
+  const navTabs=PAGE_DEFS.map(d=>`<button class="pnav-tab${d.k===pageKey?' active':''}" onclick="setPanelPage('${id}','${d.k}')">${d.l}</button>`).join('');
+  return`<div class="panel" id="${id}">
+    <div class="panel-nav">${navTabs}${showClose?`<button class="panel-close" onclick="removePanel('${id}')">✕</button>`:''}</div>
+    <div class="panel-content" id="c_${id}">${getPageHTML(pageKey,id)}</div>
+  </div>`;
+}
+
+function onPageInit(pid,pageKey){
+  if(pageKey==='nb')initNB(pid);
+  else if(pageKey==='eb')initEB(pid);
+  else if(pageKey==='biz4')initBiz4(pid);
+  else if(pageKey==='mail'){fillMailBizSel(pid);genMail(pid);fillGreetingList(pid);}
+  else if(pageKey==='prog')renderProgress(pid);
+  else if(pageKey==='excel')initExcel(pid);
+  else if(pageKey==='cal')renderCal(pid);
+  else if(pageKey==='bizm')renderBizM(pid);
+  else if(pageKey==='kwm')initKwm(pid);
+  else if(pageKey==='kwrec')initKwrec(pid);
+  else if(pageKey==='set')renderSettings(pid);
+}
+
+// ════ UTILS ════
+let _tm;
+function toast(msg,col){clearTimeout(_tm);const t=E('toast');t.textContent=msg;t.style.borderLeft='3px solid '+(col||'var(--a2)');t.classList.add('on');_tm=setTimeout(()=>t.classList.remove('on'),3200);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function E(id){return document.getElementById(id);}
+function ss(v){return v==null?'':String(v);}
+function x(s){return ss(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+const ISO=()=>new Date().toISOString().slice(0,10);
+const KRD=()=>new Date().toLocaleDateString('ko-KR');
+function monthsDiff(s){if(!s)return 0;const d=new Date(s),n=new Date();return(n.getFullYear()-d.getFullYear())*12+n.getMonth()-d.getMonth();}
+function pE(pid,base){const c=E('c_'+pid);return c?c.querySelector('#'+pid+'_'+base):null;}
+function pG(pid,base){const el=pE(pid,base);return el?el.value.trim():'';}
+function pS(pid,base,v){const el=pE(pid,base);if(el)el.value=ss(v);}
+function mk(pid,base){return pid+'_'+base;}
+function dcsv(h,rows,f){const csv=[h,...rows].map(r=>r.map(v=>'"'+ss(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+csv);a.download=f;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),100);}
+function copyText(t){return new Promise((ok,fail)=>{if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok).catch(()=>fb());}else fb();function fb(){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px;';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');document.body.removeChild(ta);ok();}catch(e){document.body.removeChild(ta);fail(e);}}});}
+function renderPager(cid,page,total,fnStr){const tp=Math.ceil(total/PER)||1,el=E(cid);if(!el)return;if(tp<=1){el.innerHTML='';return;}el.innerHTML=`<span style="font-size:10px;color:var(--m);margin-right:3px;">${total}명</span>`+Array.from({length:tp},(_,i)=>i+1).map(i=>`<button class="pager-btn${i===page?' on':''}" onclick="(${fnStr})(${i})">${i}</button>`).join('');}
+function idxRank(idx){const i=IDX_LIST.indexOf(idx);return i>=0?i:99;}
+function idxBadge(idx){if(!idx)return`<span style="color:var(--m)">-</span>`;const isJ=idx.startsWith('준최');const gr=parseInt(idx.slice(2))||1;const mx=isJ?6:3;const hue=isJ?48:24;const l=Math.round(80-(gr/mx)*28);const tx=l>60?'#1a1a1a':'#fff';return`<span class="idx-badge" style="background:hsl(${hue},88%,${l}%);color:${tx};">${idx}</span>`;}
+function fillIdxSel(pid,base,val){const el=pE(pid,base)||E(mk(pid,base));if(!el)return;el.innerHTML='<option value="">선택</option>'+IDX_LIST.map(v=>`<option value="${v}"${v===val?' selected':''}>${v}</option>`).join('');}
+function parseCSVLine(line){const res=[];let cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===','&&!q){res.push(cur.trim());cur='';}else cur+=c;}res.push(cur.trim());return res;}
+function fillAllBizSels(){
+  document.querySelectorAll('[id$="_bizsel"]').forEach(sel=>{const cur=sel.value;sel.innerHTML='<option value="">-- 업체 선택 --</option>'+BIZ.map(b=>`<option value="${b.id}">${x(b.name)}</option>`).join('');if(cur)sel.value=cur;});
+  document.querySelectorAll('[id$="_excel_bizlist"]').forEach(el=>{const pid=el.id.replace('_excel_bizlist','');const prev=[...el.querySelectorAll('input:checked')].map(i=>i.value);el.innerHTML=BIZ.map(b=>`<label class="check-bl-item"><input type="checkbox" value="${b.id}"${prev.includes(b.id)?' checked':''} onchange="updateExcelPreview('${pid}')"><span>${x(b.name)}</span></label>`).join('');});
+}
+
+// ════ FIREBASE ════
+async function fsSet(col,id,data){if(!db)return;await db.collection(col).doc(id).set(data,{merge:true});}
+async function fsAdd(col,data){if(!db)return uid();const r=await db.collection(col).add(data);return r.id;}
+async function fsDel(col,id){if(!db)return;await db.collection(col).doc(id).delete();}
+async function fsUpd(col,id,data){if(!db)return;await db.collection(col).doc(id).update(data);}
+
+function startListeners(){
+  if(!db){
+    E('sync-dot').style.color='var(--dn)';
+    E('loading').classList.add('hide');
+    addPanel('nb');
+    return;
+  }
+  let n=0;
+  const done=()=>{if(++n>=5){E('loading').classList.add('hide');addPanel('nb');}};
+  db.collection('newBloggers').onSnapshot(s=>{NEWB=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='nb')initNB(p.id);});done();},()=>done());
+  db.collection('existingBloggers').onSnapshot(s=>{EXISTB=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='eb')initEB(p.id);});done();},()=>done());
+  db.collection('businesses').onSnapshot(s=>{BIZ=s.docs.map(d=>({id:d.id,...d.data()}));fillAllBizSels();panels.forEach(p=>{if(p.pageKey==='bizm')renderBizM(p.id);});done();},()=>done());
+  db.collection('bizBloggers').onSnapshot(s=>{BIZB=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='biz4')renderBiz4List(p.id);if(p.pageKey==='prog')renderProgress(p.id);});done();},()=>done());
+  db.collection('keywords').onSnapshot(s=>{KWDS=s.docs.map(d=>({id:d.id,...d.data()}));done();},()=>done());
+  db.collection('calEvents').onSnapshot(s=>{CALEVENTS=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='cal')renderCal(p.id);});});
+  E('sync-dot').style.color='var(--a2)';
+}
+
+// ════════════════════════════════════════════
+// PAGE HTML GENERATORS
+// ════════════════════════════════════════════
+function getPageHTML(k,pid){
+  if(k==='nb')return nbHTML(pid);
+  if(k==='eb')return ebHTML(pid);
+  if(k==='biz4')return biz4HTML(pid);
+  if(k==='mail')return mailHTML(pid);
+  if(k==='prog')return progHTML(pid);
+  if(k==='excel')return excelHTML(pid);
+  if(k==='cal')return calHTML(pid);
+  if(k==='bizm')return bizmHTML(pid);
+  if(k==='kwm')return kwmHTML(pid);
+  if(k==='kwrec')return kwrecHTML(pid);
+  if(k==='set')return setHTML(pid);
+  return'<div class="empty">준비 중</div>';
+}
+
+function nbHTML(pid){const p=pid+'_';return`
+<div class="stitle">신규 블로거 리스트업</div><div class="ssub">새 블로거 정보를 입력합니다.</div>
+<div class="qpanel">
+  <div class="qtitle" id="${p}nb_ftitle">⚡ 블로거 추가</div>
+  <input type="hidden" id="${p}nb_id">
+  <div class="g4" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="블로거 닉네임"></div>
+    <div class="fg"><label class="lbl">이메일</label><input id="${p}nb_email" type="email"></div>
+    <div class="fg"><label class="lbl">IDX</label><select id="${p}nb_idx"><option value="">선택</option></select></div>
+    <div class="fg"><label class="lbl">블로그 주소</label><input id="${p}nb_url" placeholder="https://blog.naver.com/..."></div>
+  </div>
+  <div class="g3" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">RK</label><input id="${p}nb_rk"></div>
+    <div class="fg"><label class="lbl">검색어</label><input id="${p}nb_kw"></div>
+    <div class="fg"><label class="lbl">검색어 사이즈</label><input id="${p}nb_kws"></div>
+  </div>
+  <div class="fg" style="margin-bottom:7px;">
+    <label class="lbl">메모</label>
+    <div class="fl"><input id="${p}nb_mnew" placeholder="메모 내용" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();nbAddMemo('${pid}');}"><button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')">추가</button></div>
+  </div>
+  <div id="${p}nb_mlist" class="memo-list"></div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="nbCancel('${pid}')">초기화</button>
+    <button class="btn btn-g" id="${p}nb_savebtn" onclick="nbSave('${pid}')">+ 추가</button>
+  </div>
+</div>
+<div class="card">
+  <div class="abar">
+    <div><div class="ctitle">신규 블로거 목록</div><span id="${p}nb_count" class="mono">0명</span></div>
+    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:130px;font-size:11px;" oninput="renderNB('${pid}')">
+    <button class="btn btn-s btn-sm" onclick="sortNB('${pid}','idx')">IDX정렬</button>
+    <button class="btn btn-s btn-sm" onclick="sortNB('${pid}','rk')">RK정렬</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;"><table>
+    <thead><tr><th onclick="sortNB('${pid}','nick')">닉네임</th><th>이메일</th><th>블로그</th><th onclick="sortNB('${pid}','idx')">IDX</th><th onclick="sortNB('${pid}','rk')">RK</th><th>검색어</th><th>사이즈</th><th>메모</th><th>수정/삭제</th></tr></thead>
+    <tbody id="${p}nb_tbody"></tbody>
+  </table></div>
+  <div id="${p}nb_pager" class="pager"></div>
+</div>`;}
+
+function ebHTML(pid){const p=pid+'_';return`
+<div class="stitle">기존 블로거 리스트업</div><div class="ssub">검색: +포함단어 -제외단어</div>
+<div class="card">
+  <div class="abar">
+    <div><div class="ctitle">기존 블로거 목록</div><span id="${p}eb_count" class="mono">0명</span></div>
+    <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">CSV</button></div>
+  </div>
+  <div style="overflow-x:auto;"><table>
+    <thead><tr><th>닉네임</th><th>이름</th><th>이메일</th><th>블로그</th><th onclick="sortEB('${pid}','idx')">IDX</th><th onclick="sortEB('${pid}','rk')">RK</th><th onclick="sortEB('${pid}','lv')">LV</th><th onclick="sortEB('${pid}','rank')">순위</th><th onclick="sortEB('${pid}','sc')">SC</th></tr></thead>
+    <tbody id="${p}eb_tbody"></tbody>
+  </table></div>
+  <div id="${p}eb_pager" class="pager"></div>
+</div>
+<div class="qpanel" id="${p}eb_editpanel" style="display:none;">
+  <div class="qtitle">✏️ 기존 블로거 수정</div>
+  <input type="hidden" id="${p}eb_id">
+  <div class="g3" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">닉네임</label><input id="${p}eb_nick"></div>
+    <div class="fg"><label class="lbl">이름</label><input id="${p}eb_name"></div>
+    <div class="fg"><label class="lbl">이메일</label><input id="${p}eb_email"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">블로그 주소</label><input id="${p}eb_url"></div>
+    <div class="fg"><label class="lbl">연락처</label><input id="${p}eb_phone"></div>
+  </div>
+  <div class="g5" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">IDX</label><select id="${p}eb_idx"><option value="">선택</option></select></div>
+    <div class="fg"><label class="lbl">RK</label><input id="${p}eb_rk"></div>
+    <div class="fg"><label class="lbl">LV</label><input id="${p}eb_lv"></div>
+    <div class="fg"><label class="lbl">순위</label><input id="${p}eb_rank"></div>
+    <div class="fg"><label class="lbl">SC</label><input id="${p}eb_sc"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">계좌번호</label><input id="${p}eb_acct"></div>
+    <div class="fg"><label class="lbl">주민등록번호</label><input id="${p}eb_ssn"></div>
+  </div>
+  <div class="g3" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">제외 지역</label><input id="${p}eb_excl"></div>
+    <div class="fg"><label class="lbl">정보수집일</label><input type="date" id="${p}eb_coldate"></div>
+    <div class="fg"><label class="lbl">정보파기일</label><input type="date" id="${p}eb_expdate"></div>
+  </div>
+  <div class="fg" style="margin-bottom:7px;">
+    <label class="lbl">메모</label>
+    <div class="fl"><input id="${p}eb_mnew" placeholder="메모 추가" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();ebAddMemo('${pid}');}"><button class="btn btn-s btn-sm" onclick="ebAddMemo('${pid}')">추가</button></div>
+    <div id="${p}eb_mlist" class="memo-list" style="margin-top:4px;"></div>
+  </div>
+  <div class="fg" style="margin-bottom:7px;">
+    <label class="lbl">과거 체험단 내역</label>
+    <div id="${p}eb_history" style="font-size:11px;color:var(--m);">없음</div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="ebCloseEdit('${pid}')">취소</button>
+    <button class="btn btn-g" onclick="ebSave('${pid}')">저장</button>
+  </div>
+</div>`;}
+
+function biz4HTML(pid){const p=pid+'_';return`
+<div class="stitle">업체별 블로거 리스트업</div><div class="ssub">업체를 선택하고 블로거를 추가·관리합니다.</div>
+<div class="card" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+  <div class="fg" style="min-width:180px;flex:1;"><label class="lbl">업체 선택</label><select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')"><option value="">-- 업체를 선택하세요 --</option></select></div>
+  <div class="fl" style="flex-wrap:wrap;gap:5px;padding-bottom:1px;">
+    <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
+    <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">📋 구글폼 CSV</button>
+  </div>
+</div>
+<div class="qpanel" id="${p}biz4_addpanel" style="display:none;">
+  <div class="qtitle">+ 블로거 추가</div>
+  <input id="${p}biz4_srch" placeholder="닉네임 검색..." style="margin-bottom:7px;" oninput="biz4SearchB('${pid}')">
+  <div id="${p}biz4_results" style="border:1px solid var(--bd);border-radius:7px;max-height:260px;overflow-y:auto;"></div>
+  <div style="display:flex;justify-content:flex-end;margin-top:7px;"><button class="btn btn-s btn-sm" onclick="biz4ToggleAdd('${pid}')">닫기</button></div>
+</div>
+<div class="qpanel" id="${p}biz4_gformpanel" style="display:none;">
+  <div class="qtitle">📋 구글폼 CSV 매칭</div>
+  <div class="infobox">컬럼: A:타임스탬프 | B:이름 | C:닉네임 | D:연락처 | E:이메일 | F:블로그주소</div>
+  <div style="border:2px dashed var(--bd);border-radius:7px;padding:10px;text-align:center;cursor:pointer;margin-bottom:7px;color:var(--m);font-size:11px;" onclick="E('${p}gform_file').click()">📂 CSV 파일 선택<input type="file" id="${p}gform_file" accept=".csv,.txt" style="display:none" onchange="gformCSVFile('${pid}')"></div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">또는 CSV 붙여넣기</label><textarea id="${p}gform_paste" rows="3"></textarea></div>
+  <div id="${p}gform_result" style="font-size:11px;color:var(--a2);min-height:14px;margin-bottom:7px;"></div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">닫기</button>
+    <button class="btn btn-g btn-sm" onclick="importGFormCSV('${pid}')">매칭 실행</button>
+  </div>
+</div>
+<div class="card">
+  <div class="abar">
+    <div class="ctitle" style="margin:0;" id="${p}biz4_title">업체를 선택하세요</div>
+    <div class="fl" style="flex-wrap:wrap;gap:4px;">
+      <div class="fbar" id="${p}biz4_filterbar" style="margin:0;"></div>
+      <button class="btn btn-s btn-sm" onclick="expBiz4('${pid}')">CSV</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;"><table>
+    <thead><tr><th>닉네임</th><th>이름</th><th>연락처</th><th>IDX</th><th>RK</th><th>상태</th><th>방문일</th><th>포스팅기한</th><th>포스팅</th><th>삭제</th></tr></thead>
+    <tbody id="${p}biz4_tbody"></tbody>
+  </table></div>
+  <div id="${p}biz4_pager" class="pager"></div>
+</div>
+<div class="qpanel" id="${p}b4_infopanel" style="display:none;">
+  <div class="qtitle">✅ 블로거 정보 편집</div>
+  <input type="hidden" id="${p}b4_eid">
+  <div class="g5" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">이름</label><input id="${p}b4_name"></div>
+    <div class="fg"><label class="lbl">연락처</label><input id="${p}b4_phone"></div>
+    <div class="fg"><label class="lbl">방문 날짜</label><input type="date" id="${p}b4_vdate"></div>
+    <div class="fg"><label class="lbl">방문 시간</label><input id="${p}b4_vtime" placeholder="18:00"></div>
+    <div class="fg"><label class="lbl">포스팅 기한</label><input type="date" id="${p}b4_pdeadline"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">포스팅 URL</label><input id="${p}b4_purl"></div>
+    <div class="fg"><label class="lbl">비고</label><input id="${p}b4_note"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="pE('${pid}','b4_infopanel').style.display='none'">닫기</button>
+    <button class="btn btn-g" onclick="saveB4Info('${pid}')">저장</button>
+  </div>
+</div>
+<div class="qpanel" id="${p}b4_rejpanel" style="display:none;">
+  <div class="qtitle" style="color:var(--dn);">❌ 거절 사유 입력</div>
+  <input type="hidden" id="${p}b4_rejeid">
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">거절 사유</label><textarea id="${p}b4_rejreason" rows="2"></textarea></div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="pE('${pid}','b4_rejpanel').style.display='none'">취소</button>
+    <button class="btn btn-d" onclick="saveB4Reject('${pid}')">저장</button>
+  </div>
+</div>
+<div class="qpanel" id="${p}b4_paypanel" style="display:none;">
+  <div class="qtitle" style="color:var(--a3);">💳 입금처 및 신분증 정보</div>
+  <input type="hidden" id="${p}b4_payeid">
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">계좌번호</label><input id="${p}b4_payacct"></div>
+    <div class="fg"><label class="lbl">주민등록번호</label><input id="${p}b4_payssn"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="pE('${pid}','b4_paypanel').style.display='none'">취소</button>
+    <button class="btn btn-g" onclick="saveB4Payment('${pid}')">저장 (→종료)</button>
+  </div>
+</div>
+<div class="qpanel" id="${p}b4_comppanel" style="display:none;">
+  <div class="qtitle">🏁 종료 처리 → 기존블로거 과거체험단 저장</div>
+  <input type="hidden" id="${p}b4_compeid">
+  <div class="g3" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">검색어</label><input id="${p}b4_compkw"></div>
+    <div class="fg"><label class="lbl">검색어 사이즈</label><input id="${p}b4_compkws"></div>
+    <div class="fg"><label class="lbl">조건</label><input id="${p}b4_compcond"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">방문일</label><input type="date" id="${p}b4_compvisit"></div>
+    <div class="fg"><label class="lbl">포스팅 URL</label><input id="${p}b4_compurl"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="pE('${pid}','b4_comppanel').style.display='none'">취소</button>
+    <button class="btn btn-o" onclick="doB4Complete('${pid}')">✓ 저장 → 기존블로거 이동</button>
+  </div>
+</div>`;}
+
+function mailHTML(pid){const p=pid+'_';return`
+<div class="stitle">메일 작성</div><div class="ssub">상황 선택 → 받는 사람 체크 → 네이버웍스 일괄 발송</div>
+<div class="g2">
+  <div>
+    <div class="card">
+      <div class="ctitle">1. 상황 선택</div>
+      <div class="tmpl-tabs">
+        <button class="tb on" onclick="selMailSit('${pid}',1)">📨 컨텍</button>
+        <button class="tb" onclick="selMailSit('${pid}',2)">✅ 구글폼 요청</button>
+        <button class="tb" onclick="selMailSit('${pid}',3)">📅 예약 안내</button>
+        <button class="tb" onclick="selMailSit('${pid}',4)">📝 포스팅 완료 확인</button>
+      </div>
+      <div id="${p}mail_sitdesc" class="notice n-i" style="margin-bottom:0;">대상: 상태 "신규" 인 블로거</div>
+    </div>
+    <div class="card">
+      <div class="ctitle">2. 받는 사람 선택</div>
+      <div class="fg" style="margin-bottom:7px;"><label class="lbl">업체 선택</label><select id="${p}bizsel" onchange="mailBizChange('${pid}')"><option value="">-- 업체 선택 --</option></select></div>
+      <div class="check-all-row">
+        <input type="checkbox" id="${p}mail_checkall" onchange="toggleMailCheckAll('${pid}',this.checked)" style="width:14px;height:14px;accent-color:var(--a);">
+        <label for="${p}mail_checkall" style="cursor:pointer;">전체 선택</label>
+        <span id="${p}mail_selcnt" style="margin-left:auto;color:var(--a);font-weight:700;"></span>
+      </div>
+      <div id="${p}mail_blist" class="check-bl-list"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">3. 메일 설정</div>
+      <div class="fg" style="margin-bottom:7px;"><label class="lbl">제목</label><input id="${p}mail_subject" placeholder="메일 제목"></div>
+      <div id="${p}mail_vars1">
+        <div class="g2" style="margin-bottom:6px;">
+          <div class="fg"><label class="lbl">지역</label><input id="${p}mv_reg" oninput="genMail('${pid}')"></div>
+          <div class="fg"><label class="lbl">상호명</label><input id="${p}mv_store" oninput="genMail('${pid}')"></div>
+        </div>
+        <div class="g2" style="margin-bottom:6px;">
+          <div class="fg"><label class="lbl">자유식사권(만원)</label><input id="${p}mv_meal" type="number" oninput="genMail('${pid}')"></div>
+          <div class="fg"><label class="lbl">원고료(만원)</label><input id="${p}mv_fee" type="number" oninput="genMail('${pid}')"></div>
+        </div>
+        <div class="fg" style="margin-bottom:6px;"><label class="lbl">플레이스 URL</label><input id="${p}mv_addr" oninput="genMail('${pid}')"></div>
+        <div class="fg" style="margin-bottom:6px;"><label class="lbl">방문 가능 일자</label><input id="${p}mv_visit" oninput="genMail('${pid}')"></div>
+        <div class="fg" style="margin-bottom:6px;"><label class="lbl">공통사항 ②</label><input id="${p}mv_r2" oninput="genMail('${pid}')"></div>
+        <div class="fg"><label class="lbl">공통사항 ③</label><input id="${p}mv_r3" oninput="genMail('${pid}')"></div>
+      </div>
+      <div id="${p}mail_vars2" style="display:none;">
+        <div class="fg" style="margin-bottom:6px;"><label class="lbl">문의 답변</label><textarea id="${p}mv_qna" rows="2" oninput="genMail('${pid}')"></textarea></div>
+        <div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}mv_form" oninput="genMail('${pid}')"></div>
+      </div>
+      <div id="${p}mail_vars3" style="display:none;">
+        <div class="g2" style="margin-bottom:6px;">
+          <div class="fg"><label class="lbl">예약 날짜</label><input id="${p}mv_bookdate" oninput="genMail('${pid}')"></div>
+          <div class="fg"><label class="lbl">예약 시간</label><input id="${p}mv_booktime" oninput="genMail('${pid}')"></div>
+        </div>
+      </div>
+      <div id="${p}mail_vars4" style="display:none;"><div class="infobox">포스팅 완료 확인 메일입니다. 본문 직접 수정 가능.</div></div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);">
+        <div class="ctitle" style="margin-bottom:5px;">인사말 관리</div>
+        <div class="notice n-w" style="font-size:10px;">클릭하면 현재 상황의 인사말 위치에 자동으로 삽입됩니다.</div>
+        <div id="${p}greeting_list" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px;"></div>
+        <div class="fl">
+          <input id="${p}greeting_new" placeholder="인사말 추가..." style="flex:1;font-size:11px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addGreeting('${pid}');}">
+          <button class="btn btn-s btn-sm" onclick="addGreeting('${pid}')">추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="card" style="position:sticky;top:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+        <div class="ctitle" style="margin:0;" id="${p}mail_prevtitle">📨 컨텍 메일 (미리보기)</div>
+        <button class="btn btn-s btn-sm" onclick="genMail('${pid}')">↺ 미리보기</button>
+      </div>
+      <div class="notice n-i" id="${p}mail_notice">※ 닉네임 변수 {닉네임}은 발송 시 각 블로거 닉네임으로 자동 치환됩니다.</div>
+      <label class="lbl" style="margin-bottom:3px;">✏️ 내용 직접 수정 가능</label>
+      <textarea class="mail-edit" id="${p}mailTA" rows="14"></textarea>
+      <div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-p" onclick="sendMailBulk('${pid}')">📤 일괄 발송 (닉네임 자동 치환)</button>
+        <button class="btn btn-s btn-sm" onclick="copyText(E('${p}mailTA').value).then(()=>toast('복사됨','var(--a2)'))">📋 복사</button>
+        <span id="${p}mail_sendresult" style="font-size:11px;color:var(--a2);"></span>
+      </div>
+    </div>
+  </div>
+</div>`;}
+
+function progHTML(pid){return`<div class="stitle">체험단 진행 현황</div><div class="ssub">업체별 블로거 현황. 상태 클릭 시 해당 상태만 표시.</div><div class="fl" style="margin-bottom:10px;gap:6px;"><label class="lbl" style="display:inline;">정렬:</label><select id="${mk(pid,'prog_sort')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="nick">닉네임</option><option value="idx">IDX</option><option value="rk">RK</option><option value="visitDate">방문일</option></select><select id="${mk(pid,'prog_dir')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div><div id="${mk(pid,'prog_container')}"></div>`;}
+
+function excelHTML(pid){return`<div class="stitle">체험단 진행 엑셀파일</div><div class="ssub">업체·연도·월을 선택하면 해당 기간 방문한 블로거 정보를 엑셀로 내보냅니다.</div>
+<div class="card">
+  <div class="ctitle">내보내기 설정</div>
+  <div class="g3" style="margin-bottom:10px;">
+    <div class="fg"><label class="lbl">업체 선택 (복수)</label><div id="${mk(pid,'excel_bizlist')}" style="border:1px solid var(--bd);border-radius:7px;max-height:200px;overflow-y:auto;"></div></div>
+    <div class="fg"><label class="lbl">연도</label><select id="${mk(pid,'excel_year')}" style="margin-bottom:6px;" onchange="updateExcelPreview('${pid}')"></select>
+      <label class="lbl">월 (복수)</label><div id="${mk(pid,'excel_monthlist')}" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+    </div>
+    <div class="fg"><label class="lbl">미리보기</label><div id="${mk(pid,'excel_preview')}" style="font-size:11px;color:var(--m);padding:8px;background:var(--sf2);border-radius:7px;min-height:80px;">업체와 기간을 선택하세요.</div></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;"><button class="btn btn-g" onclick="exportExcel('${pid}')">📊 엑셀 파일 생성</button></div>
+</div>`;}
+
+function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="ssub">블로거 방문 일정 및 기타 일정 관리.</div>
+<div class="card">
+  <div class="cal-nav"><button onclick="calNav('${pid}',-1)">◀</button><div class="cal-title" id="${mk(pid,'cal_title')}"></div><button onclick="calNav('${pid}',1)">▶</button><button onclick="calNow('${pid}')" style="font-size:11px;">오늘</button></div>
+  <div class="cal-grid" id="${mk(pid,'cal_daynames')}"></div>
+  <div class="cal-grid" id="${mk(pid,'cal_grid')}" style="gap:3px;margin-top:3px;"></div>
+</div>
+<div class="qpanel" id="${mk(pid,'cal_evpanel')}" style="display:none;">
+  <div class="qtitle" id="${mk(pid,'cal_evtitle')}">일정 추가</div>
+  <input type="hidden" id="${mk(pid,'cal_evid')}">
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">날짜</label><input type="date" id="${mk(pid,'cal_evdate')}"></div>
+    <div class="fg"><label class="lbl">제목</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <button class="btn btn-s btn-sm" onclick="E('${mk(pid,'cal_evpanel')}').style.display='none'">취소</button>
+    <button class="btn btn-d btn-sm" id="${mk(pid,'cal_delbtn')}" onclick="delCalEvent('${pid}')" style="display:none;">삭제</button>
+    <button class="btn btn-g btn-sm" onclick="saveCalEvent('${pid}')">저장</button>
+  </div>
+</div>`;}
+
+function bizmHTML(pid){const p=pid+'_';return`
+<div class="stitle">업체 관리</div><div class="ssub">업체 정보를 등록합니다.</div>
+<div class="qpanel">
+  <div class="qtitle" id="${p}bizm_ftitle">⚡ 업체 추가</div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">업체명 *</label><input id="${p}b_name" placeholder="예: ○○레스토랑"></div>
+    <div class="fg"><label class="lbl">지역</label><input id="${p}b_reg" placeholder="예: 서울 강남구"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">계약일</label><input type="date" id="${p}b_cs"></div>
+    <div class="fg"><label class="lbl">계약종료일</label><input type="date" id="${p}b_ce"></div>
+  </div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..."></div>
+    <div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..."></div>
+  </div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">방문 가능 일자</label><input id="${p}b_visit" placeholder="평일 12시~21시"></div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">공통사항 ②</label><input id="${p}b_r2"></div>
+    <div class="fg"><label class="lbl">공통사항 ③</label><input id="${p}b_r3"></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;">
+    <input type="hidden" id="${p}b_editid">
+    <button class="btn btn-s btn-sm" onclick="cancelBizEdit('${pid}')">초기화</button>
+    <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
+  </div>
+</div>
+<div class="card">
+  <div class="abar">
+    <div class="ctitle" style="margin:0;">등록된 업체 목록 <span id="${p}biz_count" class="mono"></span></div>
+    <div class="fl"><span style="font-size:11px;color:var(--m);">정렬:</span>
+      <select id="${p}biz_sort" onchange="renderBizM('${pid}')" style="width:auto;font-size:11px;">
+        <option value="status">진행/종료</option><option value="contractDate">계약일</option><option value="region">지역</option>
+      </select>
+    </div>
+  </div>
+  <div style="overflow-x:auto;"><table>
+    <thead><tr><th>상태</th><th>업체명 (경과월)</th><th>지역</th><th>계약일</th><th>종료일</th><th>플레이스</th><th>구글폼</th><th>방문가능</th><th>공통②</th><th>공통③</th><th>수정/삭제</th></tr></thead>
+    <tbody id="${p}biz_tbody"></tbody>
+  </table></div>
+</div>`;}
+
+function kwmHTML(pid){const p=pid+'_';return`
+<div class="stitle">업체별 키워드 관리</div>
+<div class="g2">
+  <div>
+    <div class="card">
+      <div class="fg" style="margin-bottom:8px;"><label class="lbl">업체 선택</label><select id="${p}bizsel" onchange="renderKeywords('${pid}')"><option value="">-- 업체 선택 --</option></select></div>
+      <button class="btn btn-g" onclick="openKwAdd('${pid}')">+ 키워드 추가</button>
+    </div>
+    <div id="${p}kw_list"></div>
+  </div>
+  <div>
+    <div class="qpanel" id="${p}kw_formpanel" style="display:none;">
+      <div class="qtitle" id="${p}kw_formtitle">키워드 추가</div>
+      <input type="hidden" id="${p}kw_id">
+      <div class="g2" style="margin-bottom:7px;">
+        <div class="fg"><label class="lbl">키워드 *</label><input id="${p}kw_name" placeholder="키워드"></div>
+        <div class="fg"><label class="lbl">키워드 사이즈</label><input id="${p}kw_size"></div>
+      </div>
+      <div class="fg" style="margin-bottom:7px;"><label class="lbl">경쟁강도</label><input id="${p}kw_comp"></div>
+      <div class="fg" style="margin-bottom:7px;">
+        <label class="lbl">스마트블록 (LV/순위, 띄어쓰기 구분)</label>
+        <input id="${p}kw_smart" placeholder="예: 3/15 4/20 3/8" oninput="calcSmartPrev('${pid}')">
+        <div id="${p}kw_smartprev" style="font-size:11px;color:var(--a2);margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;">
+        <button class="btn btn-s btn-sm" onclick="E('${p}kw_formpanel').style.display='none'">취소</button>
+        <button class="btn btn-g" onclick="saveKeyword('${pid}')">저장</button>
+      </div>
+    </div>
+  </div>
+</div>`;}
+
+function kwrecHTML(pid){const p=pid+'_';return`
+<div class="stitle">상위노출 키워드 추천</div>
+<div class="g3">
+  <div><div class="card">
+    <div class="fg" style="margin-bottom:7px;"><label class="lbl">업체 선택</label><select id="${p}bizsel" onchange="loadRecBiz('${pid}')"><option value="">-- 업체 선택 --</option></select></div>
+    <div class="ctitle" style="margin-bottom:5px;">키워드 선택 (복수, 사이즈 순)</div>
+    <div id="${p}rec_kwlist" style="max-height:300px;overflow-y:auto;"></div>
+  </div></div>
+  <div><div class="card">
+    <div class="ctitle" style="margin-bottom:5px;">블로거 선택</div>
+    <div id="${p}rec_blist" style="max-height:340px;overflow-y:auto;border:1px solid var(--bd);border-radius:7px;"></div>
+  </div></div>
+  <div>
+    <div id="${p}rec_result" style="display:none;">
+      <div class="card" id="${p}rec_binfo"><div class="ctitle">블로거 정보</div></div>
+      <div class="card" id="${p}rec_kinfo"><div class="ctitle">선택 키워드 정보</div></div>
+    </div>
+    <div id="${p}rec_empty" class="card" style="text-align:center;color:var(--m);font-size:12px;padding:20px;">블로거와 키워드를 선택하세요.</div>
+  </div>
+</div>`;}
+
+function setHTML(pid){const p=pid+'_';return`
+<div class="stitle">설정</div><div class="ssub">Firebase 연결 및 네이버웍스 API 설정.</div>
+<div class="card"><div class="ctitle">Firebase 상태</div><div id="${p}fb_status" class="notice n-i" style="font-size:12px;">확인 중...</div></div>
+<div class="card">
+  <div class="ctitle">네이버웍스 메일 API</div>
+  <div class="infobox">네이버웍스 OAuth 2.0 Access Token을 입력하세요.</div>
+  <div class="g2" style="margin-bottom:7px;">
+    <div class="fg"><label class="lbl">Client ID</label><input id="${p}nw_cid" placeholder="Client ID"></div>
+    <div class="fg"><label class="lbl">Client Secret</label><input id="${p}nw_cs" type="password"></div>
+  </div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">발신자 계정 (userId)</label><input id="${p}nw_uid" placeholder="user@company.com"></div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">Access Token</label><input id="${p}nw_token" placeholder="Bearer Token"></div>
+  <div class="fl"><button class="btn btn-s btn-sm" onclick="saveNWSettings('${pid}')">저장</button><button class="btn btn-s btn-sm" onclick="testNWMail('${pid}')">테스트</button></div>
+  <div id="${p}nw_status" style="font-size:11px;margin-top:6px;color:var(--m);"></div>
+</div>
+<div class="card">
+  <div class="ctitle">카카오톡 API</div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">Kakao Access Token</label><input id="${p}kakao_token" placeholder="Kakao Access Token"></div>
+  <button class="btn btn-s btn-sm" onclick="saveKakaoSettings('${pid}')">저장</button>
+</div>`;}
+
+// ════════════════════════════════════════════
+// PAGE: 신규 블로거
+// ════════════════════════════════════════════
+const nbState={};
+function getNBS(pid){if(!nbState[pid])nbState[pid]={sort:{k:'nick',d:'asc'},page:1,memos:[]};return nbState[pid];}
+
+function initNB(pid){
+  fillIdxSel(pid,'nb_idx','');
+  renderNB(pid);
+}
+
+function sortNB(pid,k){
+  const s=getNBS(pid);
+  if(s.sort.k===k)s.sort.d=s.sort.d==='asc'?'desc':'asc';else{s.sort.k=k;s.sort.d='asc';}
+  s.page=1;renderNB(pid);
+}
+
+function nbAddMemo(pid){
+  const el=pE(pid,'nb_mnew')||E(mk(pid,'nb_mnew'));if(!el||!el.value.trim())return;
+  getNBS(pid).memos.push({t:el.value.trim(),d:KRD()});
+  el.value='';
+  const ml=pE(pid,'nb_mlist')||E(mk(pid,'nb_mlist'));
+  if(ml)ml.innerHTML=getNBS(pid).memos.map((m,i)=>`<div class="memo-item"><div><div class="memo-date">${x(m.d)}</div>${x(m.t)}</div><button style="background:none;border:none;color:var(--dn);cursor:pointer;" onclick="getNBS('${pid}').memos.splice(${i},1);nbAddMemo('${pid}')">×</button></div>`).join('');
+}
+
+function nbCancel(pid){
+  ['nb_nick','nb_email','nb_url','nb_rk','nb_kw','nb_kws','nb_mnew'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.value='';});
+  fillIdxSel(pid,'nb_idx','');
+  const idel=pE(pid,'nb_id')||E(mk(pid,'nb_id'));if(idel)idel.value='';
+  getNBS(pid).memos=[];
+  const ml=pE(pid,'nb_mlist')||E(mk(pid,'nb_mlist'));if(ml)ml.innerHTML='';
+  const ft=pE(pid,'nb_ftitle')||E(mk(pid,'nb_ftitle'));if(ft)ft.textContent='⚡ 블로거 추가';
+  const sb=pE(pid,'nb_savebtn')||E(mk(pid,'nb_savebtn'));if(sb)sb.textContent='+ 추가';
+}
+
+async function nbSave(pid){
+  const nick=pG(pid,'nb_nick')||(E(mk(pid,'nb_nick'))||{value:''}).value.trim();
+  if(!nick){alert('닉네임을 입력해주세요.');return;}
+  const existId=pG(pid,'nb_id')||(E(mk(pid,'nb_id'))||{value:''}).value;
+  const isEdit=!!existId;
+  if(!isEdit){const dup=EXISTB.find(b=>b.nick===nick);if(dup)toast(`⚠️ 기존 블로거에 "${nick}" 이미 존재!`,'var(--a3)');}
+  const gv=(b)=>pG(pid,b)||(E(mk(pid,b))||{value:''}).value.trim();
+  const entry={nick,email:gv('nb_email'),url:gv('nb_url'),idx:gv('nb_idx'),rk:gv('nb_rk'),kw:gv('nb_kw'),kws:gv('nb_kws'),memos:[...getNBS(pid).memos],added:KRD(),rejected:false};
+  const id=existId||uid();
+  if(!db){
+    const idx=NEWB.findIndex(b=>b.id===id);
+    if(idx>=0)NEWB[idx]={id,...entry};else NEWB.push({id,...entry});
+    localStorage.setItem('mm_newb_local',JSON.stringify(NEWB));
+    renderNB(pid);nbCancel(pid);toast(`✓ "${nick}" ${isEdit?'수정':'추가'}됨`,'var(--a2)');return;
+  }
+  try{await fsSet('newBloggers',id,entry);nbCancel(pid);toast(`✓ "${nick}" ${isEdit?'수정':'추가'}됨`,'var(--a2)');}
+  catch(e){toast('오류: '+e.message,'var(--dn)');}
+}
+
+function nbEdit(pid,id){
+  const b=NEWB.find(b=>b.id===id);if(!b)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('nb_id',b.id);sv('nb_nick',b.nick);sv('nb_email',b.email);sv('nb_url',b.url);sv('nb_rk',b.rk);sv('nb_kw',b.kw);sv('nb_kws',b.kws);
+  fillIdxSel(pid,'nb_idx',b.idx||'');
+  getNBS(pid).memos=[...(b.memos||[])];
+  const ml=pE(pid,'nb_mlist')||E(mk(pid,'nb_mlist'));
+  if(ml)ml.innerHTML=getNBS(pid).memos.map((m,i)=>`<div class="memo-item"><div><div class="memo-date">${x(m.d)}</div>${x(m.t)}</div></div>`).join('');
+  const ft=pE(pid,'nb_ftitle')||E(mk(pid,'nb_ftitle'));if(ft)ft.textContent='✏️ 블로거 수정';
+  const sb=pE(pid,'nb_savebtn')||E(mk(pid,'nb_savebtn'));if(sb)sb.textContent='수정 저장';
+}
+
+async function nbDel(id){
+  const b=NEWB.find(b=>b.id===id);if(!b)return;
+  if(!confirm(`"${b.nick}" 삭제?`))return;
+  if(!db){NEWB=NEWB.filter(b=>b.id!==id);localStorage.setItem('mm_newb_local',JSON.stringify(NEWB));panels.forEach(p=>{if(p.pageKey==='nb')renderNB(p.id);});toast('삭제됨','var(--m)');return;}
+  await fsDel('newBloggers',id);toast('삭제됨','var(--m)');
+}
+
+function renderNB(pid){
+  const s=getNBS(pid);
+  const q=(pG(pid,'nb_srch')||(E(mk(pid,'nb_srch'))||{value:''}).value||'').toLowerCase();
+  let list=NEWB.filter(b=>!q||[b.nick,b.email,b.kw,b.kws].join(' ').toLowerCase().includes(q));
+  list.sort((a,b2)=>{
+    if(!!a.rejected!==!!b2.rejected)return a.rejected?1:-1;
+    let va,vb;
+    if(s.sort.k==='idx'){va=idxRank(a.idx);vb=idxRank(b2.idx);}
+    else if(s.sort.k==='rk'){va=parseFloat(a.rk)||0;vb=parseFloat(b2.rk)||0;}
+    else{va=(a.nick||'').toLowerCase();vb=(b2.nick||'').toLowerCase();}
+    const cmp=typeof va==='string'?va.localeCompare(vb,'ko'):va-vb;
+    return cmp!==0?(s.sort.d==='asc'?cmp:-cmp):(a.nick||'').localeCompare(b2.nick||'','ko');
+  });
+  const cnt=pE(pid,'nb_count')||E(mk(pid,'nb_count'));if(cnt)cnt.textContent=NEWB.length+'명'+(list.length<NEWB.length?` (검색:${list.length}명)`:'');
+  const page=s.page;
+  const pg=list.slice((page-1)*PER,page*PER);
+  const tb=pE(pid,'nb_tbody')||E(mk(pid,'nb_tbody'));if(!tb)return;
+  if(!pg.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">신규 블로거를 추가하세요.</div></div></td></tr>`;return;}
+  tb.innerHTML=pg.map(b=>{
+    const lm=(b.memos||[]).slice(-1)[0];
+    return`<tr${b.rejected?' style="opacity:.5;"':''}>
+      <td><strong>${x(b.nick)}</strong>${b.rejected?'<span class="xmark">✕</span>':''}</td>
+      <td class="mono" style="font-size:10px;">${x(b.email)||'-'}</td>
+      <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl">링크↗</a>`:'-'}</td>
+      <td>${idxBadge(b.idx)}</td>
+      <td style="font-size:11px;">${x(b.rk)||'-'}</td>
+      <td style="font-size:11px;">${x(b.kw)||'-'}</td>
+      <td style="font-size:11px;">${x(b.kws)||'-'}</td>
+      <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${lm?x(lm.t):'-'}</td>
+      <td><div class="fl" style="gap:3px;">
+        <button class="btn btn-s btn-xs" onclick="nbEdit('${pid}','${b.id}')">수정</button>
+        <button class="btn btn-d btn-xs" onclick="nbDel('${b.id}')">삭제</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  renderPager(mk(pid,'nb_pager'),page,list.length,`(p)=>{getNBS('${pid}').page=p;renderNB('${pid}');}`);
+}
+
+// ════ 기존 블로거 ════
+const ebState={};
+function getEBS(pid){if(!ebState[pid])ebState[pid]={sort:{k:'nick',d:'asc'},page:1,memos:[]};return ebState[pid];}
+
+function initEB(pid){fillIdxSel(pid,'eb_idx','');renderEB(pid);}
+
+function sortEB(pid,k){
+  const s=getEBS(pid);
+  if(s.sort.k===k)s.sort.d=s.sort.d==='asc'?'desc':'asc';else{s.sort.k=k;s.sort.d='asc';}
+  s.page=1;renderEB(pid);
+}
+
+function parseEBSearch(q){
+  const must=[],not=[];
+  q.split(/\s+/).forEach(t=>{if(t.startsWith('+')&&t.length>1)must.push(t.slice(1).toLowerCase());else if(t.startsWith('-')&&t.length>1)not.push(t.slice(1).toLowerCase());else if(t)must.push(t.toLowerCase());});
+  return{must,not};
+}
+function ebMatch(b,{must,not}){
+  const hay=[b.nick,b.name,b.email,b.url,b.phone,b.idx,b.rk,b.lv,b.rank,b.sc,(b.memos||[]).map(m=>m.t).join(' ')].join(' ').toLowerCase();
+  for(const w of must)if(!hay.includes(w))return false;
+  for(const w of not)if(hay.includes(w))return false;
+  return true;
+}
+
+function renderEB(pid){
+  const s=getEBS(pid);
+  const q=(pG(pid,'eb_srch')||(E(mk(pid,'eb_srch'))||{value:''}).value||'').trim();
+  const parsed=parseEBSearch(q);
+  let list=EXISTB.filter(b=>ebMatch(b,parsed));
+  list.sort((a,b2)=>{
+    let va,vb;
+    if(s.sort.k==='idx'){va=idxRank(a.idx);vb=idxRank(b2.idx);}
+    else if(s.sort.k==='sc'){va=parseFloat(a.sc)||0;vb=parseFloat(b2.sc)||0;}
+    else if(s.sort.k==='rk'){va=parseFloat(a.rk)||0;vb=parseFloat(b2.rk)||0;}
+    else if(s.sort.k==='lv'){va=parseFloat(a.lv)||0;vb=parseFloat(b2.lv)||0;}
+    else if(s.sort.k==='rank'){va=parseFloat(a.rank)||0;vb=parseFloat(b2.rank)||0;}
+    else{va=(a.nick||'').toLowerCase();vb=(b2.nick||'').toLowerCase();}
+    const cmp=typeof va==='string'?va.localeCompare(vb,'ko'):va-vb;
+    return cmp!==0?(s.sort.d==='asc'?cmp:-cmp):(a.nick||'').localeCompare(b2.nick||'','ko');
+  });
+  const cnt=pE(pid,'eb_count')||E(mk(pid,'eb_count'));if(cnt)cnt.textContent=EXISTB.length+'명'+(list.length<EXISTB.length?` (검색:${list.length}명)`:'');
+  const page=s.page;
+  const pg=list.slice((page-1)*PER,page*PER);
+  const tb=pE(pid,'eb_tbody')||E(mk(pid,'eb_tbody'));if(!tb)return;
+  const today=ISO();
+  if(!pg.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">2️⃣</div><div class="empty-text">기존 블로거 없음.</div></div></td></tr>`;return;}
+  tb.innerHTML=pg.map(b=>{
+    const expCls=b.expiryDate&&b.expiryDate<today?'color:var(--dn);':'';
+    return`<tr class="clickrow" onclick="if(!event.target.closest('button'))openEBEdit('${pid}','${b.id}')">
+      <td><strong>${x(b.nick)}</strong></td><td>${x(b.name)||'-'}</td>
+      <td class="mono" style="font-size:10px;">${x(b.email)||'-'}</td>
+      <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl" onclick="event.stopPropagation()">링크↗</a>`:'-'}</td>
+      <td>${idxBadge(b.idx)}</td><td style="font-size:11px;">${x(b.rk)||'-'}</td>
+      <td style="font-size:11px;">${x(b.lv)||'-'}</td><td style="font-size:11px;">${x(b.rank)||'-'}</td>
+      <td style="font-size:11px;${expCls}">${x(b.sc)||'-'}</td>
+    </tr>`;
+  }).join('');
+  renderPager(mk(pid,'eb_pager'),page,list.length,`(p)=>{getEBS('${pid}').page=p;renderEB('${pid}');}`);
+}
+
+function openEBEdit(pid,id){
+  const b=EXISTB.find(b=>b.id===id);if(!b)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('eb_id',b.id);sv('eb_nick',b.nick);sv('eb_name',b.name);sv('eb_email',b.email);sv('eb_url',b.url);sv('eb_phone',b.phone);sv('eb_rk',b.rk);sv('eb_lv',b.lv);sv('eb_rank',b.rank);sv('eb_sc',b.sc);sv('eb_acct',b.accountNum);sv('eb_ssn',b.ssn);sv('eb_excl',b.exclRegion);sv('eb_coldate',b.collectedDate);sv('eb_expdate',b.expiryDate);
+  fillIdxSel(pid,'eb_idx',b.idx||'');
+  getEBS(pid).memos=[...(b.memos||[])];
+  const ml=pE(pid,'eb_mlist')||E(mk(pid,'eb_mlist'));
+  if(ml)ml.innerHTML=getEBS(pid).memos.map((m,i)=>`<div class="memo-item"><div><div class="memo-date">${x(m.d)}</div>${x(m.t)}</div></div>`).join('');
+  const hist=b.history||[];
+  const histEl=pE(pid,'eb_history')||E(mk(pid,'eb_history'));
+  if(histEl)histEl.innerHTML=hist.length===0?'없음':`<table style="font-size:10px;width:100%;"><thead><tr><th>업체</th><th>방문일</th><th>검색어</th><th>사이즈</th><th>조건</th><th>포스팅</th></tr></thead><tbody>`+hist.map(h=>`<tr><td>${x(h.bizName)||'-'}</td><td>${x(h.visitDate)||'-'}</td><td>${x(h.kw)||'-'}</td><td>${x(h.kws)||'-'}</td><td>${x(h.cond)||'-'}</td><td>${h.postUrl?`<a href="${x(h.postUrl)}" target="_blank" class="bl">링크↗</a>`:'-'}</td></tr>`).join('')+'</tbody></table>';
+  const ep=pE(pid,'eb_editpanel')||E(mk(pid,'eb_editpanel'));if(ep){ep.style.display='block';ep.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function ebCloseEdit(pid){const ep=pE(pid,'eb_editpanel')||E(mk(pid,'eb_editpanel'));if(ep)ep.style.display='none';}
+function ebAddMemo(pid){
+  const el=pE(pid,'eb_mnew')||E(mk(pid,'eb_mnew'));if(!el||!el.value.trim())return;
+  getEBS(pid).memos.push({t:el.value.trim(),d:KRD()});el.value='';
+  const ml=pE(pid,'eb_mlist')||E(mk(pid,'eb_mlist'));
+  if(ml)ml.innerHTML=getEBS(pid).memos.map(m=>`<div class="memo-item"><div><div class="memo-date">${x(m.d)}</div>${x(m.t)}</div></div>`).join('');
+}
+async function ebSave(pid){
+  const id=(pE(pid,'eb_id')||E(mk(pid,'eb_id'))||{value:''}).value;if(!id)return;
+  const oldB=EXISTB.find(b=>b.id===id)||{};
+  const gv=(b)=>(pE(pid,b)||E(mk(pid,b))||{value:''}).value.trim();
+  const updated={nick:gv('eb_nick'),name:gv('eb_name'),email:gv('eb_email'),url:gv('eb_url'),phone:gv('eb_phone'),idx:gv('eb_idx'),rk:gv('eb_rk'),lv:gv('eb_lv'),rank:gv('eb_rank'),sc:gv('eb_sc'),accountNum:gv('eb_acct'),ssn:gv('eb_ssn'),exclRegion:gv('eb_excl'),collectedDate:gv('eb_coldate'),expiryDate:gv('eb_expdate'),memos:[...getEBS(pid).memos],history:oldB.history||[],rkUpdateDate:ISO()};
+  try{await fsSet('existingBloggers',id,updated);ebCloseEdit(pid);toast('✓ 저장됨','var(--a2)');}
+  catch(e){toast('오류: '+e.message,'var(--dn)');}
+}
+function expEB(){dcsv(['닉네임','이름','이메일','블로그','IDX','RK','LV','순위','SC','계좌','주민번호','제외지역','수집일','파기일'],EXISTB.map(b=>[b.nick,b.name,b.email,b.url,b.idx,b.rk,b.lv,b.rank,b.sc,b.accountNum,b.ssn,b.exclRegion,b.collectedDate,b.expiryDate]),'기존블로거.csv');}
+
+// ════ 업체별 블로거 ════
+const biz4State={};
+function getBiz4S(pid){if(!biz4State[pid])biz4State[pid]={bizId:'',filter:'all',page:1,addOpen:false,gformOpen:false,q:''};return biz4State[pid];}
+
+function initBiz4(pid){
+  const sel=pE(pid,'bizsel')||E(mk(pid,'bizsel'));if(!sel)return;
+  sel.innerHTML='<option value="">-- 업체를 선택하세요 --</option>'+BIZ.map(b=>`<option value="${b.id}">${x(b.name)}</option>`).join('');
+  biz4FilterBar(pid);renderBiz4List(pid);
+}
+
+function biz4Change(pid){
+  const s=getBiz4S(pid);
+  s.bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;
+  s.filter='all';s.page=1;
+  const biz=BIZ.find(b=>b.id===s.bizId);
+  const t=pE(pid,'biz4_title')||E(mk(pid,'biz4_title'));if(t)t.textContent=biz?`${biz.name} 블로거 목록`:'업체를 선택하세요';
+  biz4FilterBar(pid);renderBiz4List(pid);
+  ['b4_infopanel','b4_rejpanel','b4_paypanel','b4_comppanel'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.style.display='none';});
+}
+
+function biz4FilterBar(pid){
+  const bar=pE(pid,'biz4_filterbar')||E(mk(pid,'biz4_filterbar'));if(!bar)return;
+  const s=getBiz4S(pid);
+  bar.innerHTML=[['all','전체'],...STATUSES.map(st=>[st,st])].map(([k,l])=>`<button class="fbtn${s.filter===k?' on':''}" onclick="setBiz4F('${pid}','${k}',this)">${l}</button>`).join('');
+}
+
+function setBiz4F(pid,f,el){
+  getBiz4S(pid).filter=f;getBiz4S(pid).page=1;
+  document.querySelectorAll(`#${mk(pid,'biz4_filterbar')} .fbtn`).forEach(b=>b.classList.remove('on'));
+  if(el)el.classList.add('on');renderBiz4List(pid);
+}
+
+function getBiz4List(pid){
+  const s=getBiz4S(pid);if(!s.bizId)return[];
+  let list=BIZB.filter(e=>e.bizId===s.bizId);
+  if(s.filter!=='all')list=list.filter(e=>e.status===s.filter);
+  return list.sort((a,b)=>{const so=STATUSES.indexOf(a.status)-STATUSES.indexOf(b.status);if(so!==0)return so;return(a.nick||'').localeCompare(b.nick||'','ko');});
+}
+
+function renderBiz4List(pid){
+  const tb=pE(pid,'biz4_tbody')||E(mk(pid,'biz4_tbody'));if(!tb)return;
+  const list=getBiz4List(pid),s=getBiz4S(pid);
+  if(!list.length){tb.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">4️⃣</div><div class="empty-text">${s.bizId?'블로거를 추가하세요.':'업체를 선택하세요.'}</div></div></td></tr>`;const pg=pE(pid,'biz4_pager')||E(mk(pid,'biz4_pager'));if(pg)pg.innerHTML='';return;}
+  const today=ISO();
+  const page=list.slice((s.page-1)*PER,s.page*PER);
+  tb.innerHTML=page.map(e=>{
+    const overdue=e.postDeadline&&e.postDeadline<today&&e.status!=='완료'&&e.status!=='종료';
+    return`<tr class="clickrow${overdue?' overdue':''}" onclick="if(!event.target.closest('select,button'))openB4Panel('${pid}','${e.id}')">
+      <td><strong>${x(e.nick)}</strong>${e.rejected?'<span class="xmark">✕</span>':''}</td>
+      <td>${x(e.name)||'-'}</td><td class="mono" style="font-size:10px;">${x(e.phone)||'-'}</td>
+      <td>${idxBadge(e.idx)}</td><td style="font-size:11px;">${x(e.rk)||'-'}</td>
+      <td>
+        <select style="border-radius:5px;font-size:11px;padding:2px 5px;cursor:pointer;background:var(--sf2);border:1px solid var(--bd);color:var(--t);" onchange="onB4StatusChange('${pid}',this,'${e.id}')" onclick="event.stopPropagation()">
+          ${STATUSES.map(st=>`<option value="${st}"${e.status===st?' selected':''}>${st}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:11px;">${x(e.visitDate)||'-'} ${x(e.visitTime)||''}</td>
+      <td style="font-size:11px;${overdue?'color:var(--dn);font-weight:600;':''}">${x(e.postDeadline)||'-'}</td>
+      <td style="font-size:11px;">${e.postUrl?`<a href="${x(e.postUrl)}" target="_blank" class="bl" onclick="event.stopPropagation()">↗</a>`:'-'}</td>
+      <td onclick="event.stopPropagation()"><div class="fl" style="gap:3px;">
+        ${e.status==='종료'?`<button class="btn btn-o btn-xs" onclick="openB4Complete('${pid}','${e.id}')">이동</button>`:''}
+        <button class="btn btn-d btn-xs" onclick="delBiz4Entry('${pid}','${e.id}')">삭제</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  renderPager(mk(pid,'biz4_pager'),s.page,list.length,`(p)=>{getBiz4S('${pid}').page=p;renderBiz4List('${pid}');}`);
+}
+
+async function onB4StatusChange(pid,sel,id){
+  const newSt=sel.value;const entry=BIZB.find(e=>e.id===id);if(!entry)return;const oldSt=entry.status;if(newSt===oldSt)return;
+  if(newSt==='종료'&&(!entry.accountNum||!entry.ssn)){sel.value=oldSt;toast('⚠️ 입금처/신분증 먼저 입력해주세요.','var(--dn)');return;}
+  if(newSt==='일정확정'&&!entry.visitDate){sel.value=oldSt;toast('⚠️ 방문일을 먼저 입력해주세요.','var(--dn)');return;}
+  await fsUpd('bizBloggers',id,{status:newSt});
+  if(newSt==='거절')openB4RejectPanel(pid,id);
+  else if(newSt==='종료')openB4PaymentPanel(pid,id);
+  toast(`"${entry.nick}" → ${newSt}`,'var(--a2)');
+}
+
+function hideB4Panels(pid){['b4_infopanel','b4_rejpanel','b4_paypanel','b4_comppanel'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.style.display='none';});}
+function openB4Panel(pid,id){const e=BIZB.find(b=>b.id===id);if(!e)return;if(e.status==='거절')openB4RejectPanel(pid,id);else if(e.status==='종료')openB4PaymentPanel(pid,id);else openB4InfoPanel(pid,id);}
+function openB4InfoPanel(pid,id){
+  const e=BIZB.find(b=>b.id===id);if(!e)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b4_eid',id);sv('b4_name',e.name);sv('b4_phone',e.phone);sv('b4_vdate',e.visitDate);sv('b4_vtime',e.visitTime);sv('b4_pdeadline',e.postDeadline);sv('b4_purl',e.postUrl);sv('b4_note',e.note);
+  hideB4Panels(pid);const el=pE(pid,'b4_infopanel')||E(mk(pid,'b4_infopanel'));if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),50);}
+}
+async function saveB4Info(pid){
+  const id=(pE(pid,'b4_eid')||E(mk(pid,'b4_eid'))||{value:''}).value;if(!id)return;
+  const gv=(b)=>(pE(pid,b)||E(mk(pid,b))||{value:''}).value.trim();
+  const data={name:gv('b4_name'),phone:gv('b4_phone'),visitDate:gv('b4_vdate'),visitTime:gv('b4_vtime'),postDeadline:gv('b4_pdeadline'),postUrl:gv('b4_purl'),note:gv('b4_note')};
+  const e=BIZB.find(b=>b.id===id);
+  if(data.visitDate&&e&&e.status==='일정조율')data.status='일정확정';
+  await fsUpd('bizBloggers',id,data);
+  const el=pE(pid,'b4_infopanel')||E(mk(pid,'b4_infopanel'));if(el)el.style.display='none';
+  toast('✓ 저장됨','var(--a2)');
+}
+function openB4RejectPanel(pid,id){
+  const e=BIZB.find(b=>b.id===id);if(!e)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b4_rejeid',id);sv('b4_rejreason',e.rejectReason||'');
+  hideB4Panels(pid);const el=pE(pid,'b4_rejpanel')||E(mk(pid,'b4_rejpanel'));if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),50);}
+}
+async function saveB4Reject(pid){
+  const id=(pE(pid,'b4_rejeid')||E(mk(pid,'b4_rejeid'))||{value:''}).value;
+  const entry=BIZB.find(e=>e.id===id);if(!entry)return;
+  const reason=(pE(pid,'b4_rejreason')||E(mk(pid,'b4_rejreason'))||{value:''}).value.trim();
+  await fsUpd('bizBloggers',id,{status:'거절',rejectReason:reason,rejected:true});
+  if(entry.newBId)await fsUpd('newBloggers',entry.newBId,{rejected:true});
+  if(entry.existBId){const eb=EXISTB.find(b=>b.id===entry.existBId);if(eb){const memos=[...(eb.memos||[]),{t:`[거절] ${reason}`,d:KRD()}];await fsUpd('existingBloggers',entry.existBId,{memos});}}
+  await fsDel('bizBloggers',id);
+  const el=pE(pid,'b4_rejpanel')||E(mk(pid,'b4_rejpanel'));if(el)el.style.display='none';
+  toast('거절 처리됨','var(--m)');
+}
+function openB4PaymentPanel(pid,id){
+  const e=BIZB.find(b=>b.id===id);if(!e)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b4_payeid',id);sv('b4_payacct',e.accountNum);sv('b4_payssn',e.ssn);
+  hideB4Panels(pid);const el=pE(pid,'b4_paypanel')||E(mk(pid,'b4_paypanel'));if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),50);}
+}
+async function saveB4Payment(pid){
+  const id=(pE(pid,'b4_payeid')||E(mk(pid,'b4_payeid'))||{value:''}).value;
+  const acct=(pE(pid,'b4_payacct')||E(mk(pid,'b4_payacct'))||{value:''}).value.trim();const ssn=(pE(pid,'b4_payssn')||E(mk(pid,'b4_payssn'))||{value:''}).value.trim();
+  if(!acct||!ssn){toast('계좌번호와 주민번호를 모두 입력해주세요.','var(--dn)');return;}
+  await fsUpd('bizBloggers',id,{accountNum:acct,ssn,status:'종료'});
+  const e=BIZB.find(b=>b.id===id);
+  if(e&&e.existBId)await fsUpd('existingBloggers',e.existBId,{accountNum:acct,ssn});
+  const el=pE(pid,'b4_paypanel')||E(mk(pid,'b4_paypanel'));if(el)el.style.display='none';
+  openB4Complete(pid,id);toast('✓ 입금 정보 저장됨','var(--a2)');
+}
+function openB4Complete(pid,id){
+  const e=BIZB.find(b=>b.id===id);if(!e)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b4_compeid',id);sv('b4_compkw',e.kw);sv('b4_compkws',e.kws);sv('b4_compcond',e.conditions||'');sv('b4_compvisit',e.visitDate);sv('b4_compurl',e.postUrl);
+  hideB4Panels(pid);const el=pE(pid,'b4_comppanel')||E(mk(pid,'b4_comppanel'));if(el){el.style.display='block';setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),50);}
+}
+async function doB4Complete(pid){
+  const id=(pE(pid,'b4_compeid')||E(mk(pid,'b4_compeid'))||{value:''}).value;
+  const e=BIZB.find(b=>b.id===id);if(!e)return;
+  const biz=BIZ.find(b=>b.id===e.bizId);
+  const gv=(b)=>(pE(pid,b)||E(mk(pid,b))||{value:''}).value.trim();
+  const histEntry={bizId:e.bizId,bizName:biz?biz.name:'',visitDate:gv('b4_compvisit'),kw:gv('b4_compkw'),kws:gv('b4_compkws'),cond:gv('b4_compcond'),postUrl:gv('b4_compurl'),addedDate:ISO()};
+  try{
+    const existB=EXISTB.find(b=>b.id===e.existBId);
+    if(existB){await fsUpd('existingBloggers',e.existBId,{history:[...(existB.history||[]),histEntry]});}
+    else{await fsSet('existingBloggers',uid(),{nick:e.nick,name:e.name||'',email:e.email||'',url:e.url||'',phone:e.phone||'',idx:e.idx||'',rk:e.rk||'',lv:e.lv||'',rank:e.rank||'',sc:e.sc||'',accountNum:e.accountNum||'',ssn:e.ssn||'',memos:e.memos||[],history:[histEntry],collectedDate:ISO()});}
+    await fsDel('bizBloggers',id);
+    const el=pE(pid,'b4_comppanel')||E(mk(pid,'b4_comppanel'));if(el)el.style.display='none';
+    toast(`✓ "${e.nick}" 완료 → 기존 블로거 이동됨`,'var(--a2)');
+  }catch(err){toast('오류: '+err.message,'var(--dn)');}
+}
+async function delBiz4Entry(pid,id){if(!confirm('삭제?'))return;await fsDel('bizBloggers',id);toast('삭제됨','var(--m)');}
+function biz4ToggleAdd(pid){
+  const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
+  s.addOpen=!s.addOpen;const el=pE(pid,'biz4_addpanel')||E(mk(pid,'biz4_addpanel'));if(el)el.style.display=s.addOpen?'block':'none';
+  if(s.addOpen){s.q='';const si=pE(pid,'biz4_srch')||E(mk(pid,'biz4_srch'));if(si)si.value='';biz4RenderBR(pid);}
+}
+function biz4ToggleGForm(pid){
+  const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
+  s.gformOpen=!s.gformOpen;const el=pE(pid,'biz4_gformpanel')||E(mk(pid,'biz4_gformpanel'));if(el)el.style.display=s.gformOpen?'block':'none';
+}
+function biz4SearchB(pid){getBiz4S(pid).q=(pE(pid,'biz4_srch')||E(mk(pid,'biz4_srch'))||{value:''}).value;biz4RenderBR(pid);}
+function biz4RenderBR(pid){
+  const s=getBiz4S(pid);const q=(s.q||'').toLowerCase();
+  const all=[...NEWB.filter(b=>!b.rejected).map(b=>({...b,_src:'신규'})),...EXISTB.map(b=>({...b,_src:'기존'}))];
+  const list=q?all.filter(b=>(b.nick||'').toLowerCase().includes(q)):all;
+  list.sort((a,b)=>(a.nick||'').localeCompare(b.nick||'','ko'));
+  const div=pE(pid,'biz4_results')||E(mk(pid,'biz4_results'));if(!div)return;
+  if(!list.length){div.innerHTML='<div style="padding:10px;color:var(--m);font-size:11px;">검색 결과 없음</div>';return;}
+  div.innerHTML=list.slice(0,30).map(b=>{
+    const already=BIZB.find(e=>e.bizId===s.bizId&&e.nick===b.nick);
+    return`<div class="sri"><div><strong>${x(b.nick)}</strong> <span style="color:var(--m);font-size:10px;">${b._src}</span><div style="font-size:10px;color:var(--m);">${idxBadge(b.idx)} RK:${b.rk||'-'} LV:${b.lv||'-'}</div></div>${already?'<span style="font-size:10px;color:var(--m);">추가됨</span>':`<button class="btn btn-g btn-xs" onclick="biz4AddBlogger('${pid}','${b.id}','${b._src}')">추가</button>`}</div>`;
+  }).join('');
+}
+async function biz4AddBlogger(pid,bloggerId,src){
+  const s=getBiz4S(pid);
+  const b=src==='신규'?NEWB.find(b=>b.id===bloggerId):EXISTB.find(b=>b.id===bloggerId);if(!b)return;
+  if(BIZB.find(e=>e.bizId===s.bizId&&e.nick===b.nick)){toast(`"${b.nick}"은 이미 추가됨`,'var(--a3)');return;}
+  const entry={bizId:s.bizId,newBId:src==='신규'?bloggerId:'',existBId:src==='기존'?bloggerId:'',nick:b.nick,name:b.name||'',email:b.email||'',phone:b.phone||'',url:b.url||'',idx:b.idx||'',rk:b.rk||'',lv:b.lv||'',rank:b.rank||'',sc:b.sc||'',kw:b.kw||'',kws:b.kws||'',memos:[],status:'신규',addedDate:ISO()};
+  await fsAdd('bizBloggers',entry);toast(`✓ "${b.nick}" 추가됨`,'var(--a2)');biz4RenderBR(pid);
+}
+function expBiz4(pid){const list=getBiz4List(pid);dcsv(['닉네임','이름','연락처','이메일','IDX','RK','상태','방문일','포스팅기한','포스팅URL','비고'],list.map(e=>[e.nick,e.name,e.phone,e.email,e.idx,e.rk,e.status,e.visitDate,e.postDeadline,e.postUrl,e.note]),'업체별블로거.csv');}
+function gformCSVFile(pid){const f=pE(pid,'gform_file')||E(mk(pid,'gform_file'));if(!f||!f.files[0])return;const r=new FileReader();r.onload=e=>{let t=e.target.result;if(t.charCodeAt(0)===0xFEFF)t=t.slice(1);const ta=pE(pid,'gform_paste')||E(mk(pid,'gform_paste'));if(ta)ta.value=t;};r.readAsText(f.files[0],'UTF-8');}
+async function importGFormCSV(pid){
+  const s=getBiz4S(pid);
+  const ta=pE(pid,'gform_paste')||E(mk(pid,'gform_paste'));const text=(ta&&ta.value||'').trim();
+  if(!text){alert('CSV 내용 입력 또는 파일을 선택해주세요.');return;}
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(lines.length<2){alert('데이터가 없습니다.');return;}
+  const rows=lines.slice(1).map(parseCSVLine);let matched=0;
+  for(const row of rows){
+    const csvNick=(row[2]||'').trim(),csvEmail=(row[4]||'').trim();
+    let entry=null;
+    if(csvNick)entry=BIZB.find(e=>e.bizId===s.bizId&&e.nick===csvNick);
+    if(!entry&&csvEmail)entry=BIZB.find(e=>e.bizId===s.bizId&&e.email===csvEmail);
+    if(entry){const updates={};if(row[1]&&row[1].trim())updates.name=row[1].trim();if(row[3]&&row[3].trim())updates.phone=row[3].trim();if(csvEmail)updates.email=csvEmail;if(row[0])updates.timestamp=row[0];if(row[5])updates.url=row[5].trim();updates.status='구글폼요청';await fsUpd('bizBloggers',entry.id,updates);matched++;}
+  }
+  const res=pE(pid,'gform_result')||E(mk(pid,'gform_result'));if(res)res.textContent=`✓ ${matched}명 매칭 완료 (${rows.length}행)`;
+  toast(`✓ ${matched}명 매칭됨`,'var(--a2)');
+}
+
+// ════ 메일 ════
+const mailState={};
+function getMailS(pid){if(!mailState[pid])mailState[pid]={sit:1};return mailState[pid];}
+
+const MAIL_SIT={
+  1:{label:'컨텍',targetStatus:'신규',title:'📨 컨텍 메일'},
+  2:{label:'구글폼 요청',targetStatus:'수락',title:'✅ 구글폼 요청 메일'},
+  3:{label:'예약 안내',targetStatus:'구글폼요청',title:'📅 예약 안내 메일'},
+  4:{label:'포스팅 완료 확인',targetStatus:'방문',title:'📝 포스팅 완료 확인 메일'},
+};
+
+// FIX 2: 상황별 인사말 기본값
+const GREETING_DEFAULT={
+  1:'단발적인 협업을 넘어 장기적인 협업 관계를 기대하며, 자세한 체험단 내용은 아래 내용을 확인 부탁드립니다. ',
+  2:'함께해주셔서 진심으로 감사드립니다☺',
+  3:'예약 안내 드립니다 :)',
+  4:'작성해주신 포스팅 확인했습니다^^\n정성스러운 리뷰 진심으로 감사드립니다.',
+};
+
+function selMailSit(pid,n){
+  getMailS(pid).sit=n;
+  const panel=E('c_'+pid);if(!panel)return;
+  panel.querySelectorAll('.tb').forEach((b,i)=>{b.className='tb'+(i===n-1?' on':' t'+(i+1));});
+  const desc=pE(pid,'mail_sitdesc')||E(mk(pid,'mail_sitdesc'));if(desc)desc.textContent=`대상: 상태 "${MAIL_SIT[n].targetStatus}" 인 블로거`;
+  const pt=pE(pid,'mail_prevtitle')||E(mk(pid,'mail_prevtitle'));if(pt)pt.textContent=MAIL_SIT[n].title+' (미리보기)';
+  [1,2,3,4].forEach(i=>{const v=pE(pid,'mail_vars'+i)||E(mk(pid,'mail_vars'+i));if(v)v.style.display=i===n?'block':'none';});
+  renderMailBloggerList(pid);
+  genMail(pid);
+  fillGreetingList(pid);
+}
+
+function fillMailBizSel(pid){
+  const sels=[pE(pid,'bizsel'),E(mk(pid,'bizsel'))];
+  sels.filter(Boolean).forEach(sel=>{const cur=sel.value;sel.innerHTML='<option value="">-- 업체 선택 --</option>'+BIZ.map(b=>`<option value="${b.id}">${x(b.name)}</option>`).join('');if(cur)sel.value=cur;});
+}
+
+function mailBizChange(pid){
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;
+  const biz=BIZ.find(b=>b.id===bizId);
+  if(biz){
+    const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+    sv('mv_reg',biz.reg);sv('mv_store',biz.name);sv('mv_addr',biz.url);sv('mv_visit',biz.visit);sv('mv_r2',biz.r2);sv('mv_r3',biz.r3);sv('mv_form',biz.form);
+  }
+  renderMailBloggerList(pid);genMail(pid);
+}
+
+function renderMailBloggerList(pid){
+  const n=getMailS(pid).sit;const sit=MAIL_SIT[n];
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;
+  const el=pE(pid,'mail_blist')||E(mk(pid,'mail_blist'));if(!el)return;
+  const bloggers=BIZB.filter(e=>e.bizId===bizId&&e.status===sit.targetStatus).sort((a,b)=>(a.nick||'').localeCompare(b.nick||'','ko'));
+  if(!bloggers.length){el.innerHTML=`<div style="padding:10px;font-size:11px;color:var(--m);">상태 "${sit.targetStatus}"인 블로거 없음</div>`;const sc=pE(pid,'mail_selcnt')||E(mk(pid,'mail_selcnt'));if(sc)sc.textContent='';return;}
+  el.innerHTML=bloggers.map(b=>`<label class="check-bl-item"><input type="checkbox" value="${b.id}" name="${mk(pid,'mail_b')}" onchange="updateMailCount('${pid}')"><span><strong>${x(b.nick)}</strong> <span style="font-size:10px;color:var(--m);">${x(b.email)||'이메일없음'}</span></span></label>`).join('');
+  updateMailCount(pid);
+}
+
+function toggleMailCheckAll(pid,checked){
+  document.querySelectorAll(`input[name="${mk(pid,'mail_b')}"]`).forEach(i=>i.checked=checked);
+  updateMailCount(pid);
+}
+function updateMailCount(pid){
+  const cnt=document.querySelectorAll(`input[name="${mk(pid,'mail_b')}"]:checked`).length;
+  const total=document.querySelectorAll(`input[name="${mk(pid,'mail_b')}"]`).length;
+  const el=pE(pid,'mail_selcnt')||E(mk(pid,'mail_selcnt'));if(el)el.textContent=`${cnt}/${total}명 선택`;
+  const ca=pE(pid,'mail_checkall')||E(mk(pid,'mail_checkall'));if(ca)ca.checked=cnt===total&&total>0;
+}
+
+function getGV(pid,base){return(pE(pid,base)||E(mk(pid,base))||{value:''}).value||'';}
+
+// 메일 본문 생성 (닉네임 자리에 {닉네임} placeholder)
+function tmplText(pid,nick){
+  const n=getMailS(pid).sit;
+  const NM=nick||'{닉네임}';
+  const greeting=GREETING_DEFAULT[n];
+  if(n===1){
+    const reg=getGV(pid,'mv_reg')||'{지역}';const store=getGV(pid,'mv_store')||'{상호명}';
+    const meal=getGV(pid,'mv_meal')?getGV(pid,'mv_meal')+'만원':'N만원';const fee=getGV(pid,'mv_fee')?getGV(pid,'mv_fee')+'만원':'N만원';
+    const addr=getGV(pid,'mv_addr')||'{플레이스URL}';const visit=getGV(pid,'mv_visit')||'(방문가능일자)';
+    const r2=getGV(pid,'mv_r2')||'(내용입력)';const r3=getGV(pid,'mv_r3')||'(내용입력)';
+    return `안녕하세요, ${NM}님!\n브랜드와 블로거의 협업을 돕는 마인즈마케팅 담당자입니다.\n현재 ${reg}에 위치한 <${store}> 체험단을 모집하고 있습니다.\n\n${greeting}\n\n[<${store}> 체험단 내용]\n\n✅ 제공 내역\n자유 식사권 ${meal} + 원고료 ${fee}\n\n✅ 키워드: 별도 안내\n\n✅ ${store} 플레이스\n${addr}\n\n✅ 방문 가능 일자\n${visit}\n\n✅ 작성기한\n방문 후 7일 이내\n\n✅ 체험단 공통 사항\n1️⃣ 1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입/ 인용구 활용\n2️⃣ ${r2}\n3️⃣ ${r3}\n\n괜찮으시다면 진행 안내 도와드리겠습니다!\n추가 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.\n\n감사합니다.`;
+  }
+  if(n===2){
+    const qna=getGV(pid,'mv_qna');const form=getGV(pid,'mv_form')||'{구글폼링크}';
+    return `안녕하세요, ${NM}님.\n${greeting}\n${qna?'\n'+qna+'\n':''}\n아래 구글폼을 작성해주시면 확인 후 바로 예약 안내 도와드리겠습니다 :)\n\n${form}\n\n감사합니다.`;
+  }
+  if(n===3){
+    const bdate=getGV(pid,'mv_bookdate');const btime=getGV(pid,'mv_booktime');
+    return `안녕하세요, ${NM}님.\n${greeting}\n\n방문 예약이 완료되었습니다.\n\n📅 예약 일시: ${bdate||'(날짜)'} ${btime||'(시간)'}\n\n방문 전 확인 부탁드리며, 일정 변경이 필요하시면 미리 연락 주세요.\n\n감사합니다.`;
+  }
+  return `안녕하세요, ${NM}님.\n${greeting}\n\n원고료는 포스팅이 업로드된 해당 월의 말일(주말 또는 공휴일일 경우 전날)에 일괄 지급되며,\n원고료 입금 및 원천징수를 위한 아래 서류 전달을 부탁드립니다.\n\n1. 신분증 사본\n2. 입금받으실 통장 사본\n\n감사합니다.`;
+}
+
+function genMail(pid){
+  const ta=pE(pid,'mailTA')||E(mk(pid,'mailTA'));if(!ta)return;
+  ta.value=tmplText(pid,null);
+}
+
+// FIX 2: 인사말 클릭 → 현재 상황의 인사말 위치(greeting 자리)를 교체
+function applyGreeting(pid,idx){
+  const ta=pE(pid,'mailTA')||E(mk(pid,'mailTA'));if(!ta)return;
+  const n=getMailS(pid).sit;
+  const defaultGreeting=GREETING_DEFAULT[n];
+  const customGreeting=mailGreetings[idx];
+  if(customGreeting===undefined)return;
+  let body=ta.value;
+  if(body.includes(defaultGreeting)){
+    ta.value=body.replace(defaultGreeting,customGreeting);
+    toast('✓ 인사말 적용됨','var(--a2)');
+  } else {
+    toast('인사말 위치를 찾지 못했습니다. 미리보기 새로고침 후 시도하세요.','var(--a3)');
+  }
+}
+
+// FIX 3: 일괄발송 - 닉네임 개인화
+async function sendMailBulk(pid){
+  const selected=[...document.querySelectorAll(`input[name="${mk(pid,'mail_b')}"]:checked`)].map(i=>i.value);
+  if(!selected.length){alert('받는 사람을 선택해주세요.');return;}
+  const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
+  if(!settings.accessToken||!settings.userId){alert('설정 탭에서 네이버웍스 API 정보를 먼저 입력해주세요.');return;}
+  const subject=getGV(pid,'mail_subject')||MAIL_SIT[getMailS(pid).sit].title;
+  const baseBody=(pE(pid,'mailTA')||E(mk(pid,'mailTA'))||{value:''}).value;
+  let sent=0,failed=0;
+  const res=pE(pid,'mail_sendresult')||E(mk(pid,'mail_sendresult'));if(res)res.textContent='발송 중...';
+  for(const id of selected){
+    const entry=BIZB.find(e=>e.id===id);if(!entry)continue;
+    if(!entry.email){failed++;continue;}
+    // FIX: {닉네임} → 실제 닉네임 치환
+    const personalBody=baseBody.replace(/\{닉네임\}/g,entry.nick||'');
+    try{await sendNWMail(settings,entry.email,subject,personalBody);sent++;}
+    catch(e){failed++;console.error(e);}
+  }
+  if(res)res.textContent=`✓ ${sent}명 발송${failed?`, ${failed}명 실패`:''}`;
+  toast(`${sent}명 발송 완료`,'var(--a2)');
+}
+
+async function sendNWMail(settings,to,subject,body){
+  const res=await fetch(`https://www.worksapis.com/v1.0/users/${encodeURIComponent(settings.userId)}/mails`,{
+    method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${settings.accessToken}`},
+    body:JSON.stringify({subject,body,to:[to],bodyType:'text/plain'})
+  });
+  if(!res.ok)throw new Error(await res.text());
+}
+
+function fillGreetingList(pid){
+  const el=pE(pid,'greeting_list')||E(mk(pid,'greeting_list'));if(!el)return;
+  el.innerHTML=mailGreetings.map((g,i)=>`<div class="greeting-chip" onclick="applyGreeting('${pid}',${i})" title="클릭: 인사말 위치에 삽입">
+    <span>${x(g)}</span>
+    <button onclick="event.stopPropagation();delGreeting(${i})" style="background:none;border:none;color:var(--dn);cursor:pointer;font-size:12px;line-height:1;">×</button>
+  </div>`).join('');
+}
+function addGreeting(pid){
+  const input=pE(pid,'greeting_new')||E(mk(pid,'greeting_new'));if(!input||!input.value.trim())return;
+  mailGreetings.push(input.value.trim());input.value='';
+  localStorage.setItem('mm_greet',JSON.stringify(mailGreetings));
+  panels.forEach(p=>{if(p.pageKey==='mail')fillGreetingList(p.id);});
+}
+function delGreeting(i){mailGreetings.splice(i,1);localStorage.setItem('mm_greet',JSON.stringify(mailGreetings));panels.forEach(p=>{if(p.pageKey==='mail')fillGreetingList(p.id);});}
+
+// ════ 진행 현황 ════
+function renderProgress(pid){
+  const container=pE(pid,'prog_container')||E(mk(pid,'prog_container'));if(!container)return;
+  const sortKey=(pE(pid,'prog_sort')||E(mk(pid,'prog_sort'))||{value:'nick'}).value;
+  const sortDir=(pE(pid,'prog_dir')||E(mk(pid,'prog_dir'))||{value:'asc'}).value;
+  if(!BIZ.length){container.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">업체를 등록하세요.</div></div>';return;}
+  const today=ISO();
+  container.innerHTML=BIZ.map(biz=>{
+    const bizBloggers=BIZB.filter(e=>e.bizId===biz.id);
+    const bizFilter=(progressFilters[pid+biz.id])||'all';
+    let display=bizFilter==='all'?bizBloggers:bizBloggers.filter(e=>e.status===bizFilter);
+    display.sort((a,b)=>{
+      let va,vb;
+      if(sortKey==='idx'){va=idxRank(a.idx);vb=idxRank(b.idx);}
+      else if(sortKey==='rk'){va=parseFloat(a.rk)||0;vb=parseFloat(b.rk)||0;}
+      else if(sortKey==='visitDate'){va=a.visitDate||'';vb=b.visitDate||'';}
+      else{va=a.nick||'';vb=b.nick||'';}
+      const cmp=typeof va==='string'?va.localeCompare(vb,'ko'):va-vb;
+      return sortDir==='asc'?cmp:-cmp;
+    });
+    const stCounts={};STATUSES.forEach(s=>stCounts[s]=bizBloggers.filter(e=>e.status===s).length);
+    return`<div style="margin-bottom:12px;">
+      <div class="prog-biz-hdr" onclick="toggleProgBiz(this)">
+        <div style="display:flex;align-items:center;gap:8px;"><strong>${x(biz.name)}</strong><span class="mono" style="font-size:10px;">${bizBloggers.length}명</span></div>
+        <span style="font-size:12px;color:var(--m);">▼</span>
+      </div>
+      <div class="prog-biz-body">
+        <div class="prog-st-bar">
+          <button class="fbtn${bizFilter==='all'?' on':''}" onclick="setProgFilter('${pid}','${biz.id}','all')">전체(${bizBloggers.length})</button>
+          ${STATUSES.filter(s=>stCounts[s]>0).map(s=>`<button class="fbtn${bizFilter===s?' on':''}" onclick="setProgFilter('${pid}','${biz.id}','${s}')">${s}(${stCounts[s]})</button>`).join('')}
+        </div>
+        ${display.length?`<div style="overflow-x:auto;"><table style="font-size:11px;"><thead><tr><th>닉네임</th><th>IDX</th><th>RK</th><th>상태</th><th>방문일</th><th>포스팅기한</th></tr></thead><tbody>
+          ${display.map(e=>{const ov=e.postDeadline&&e.postDeadline<today&&e.status!=='완료'&&e.status!=='종료';return`<tr${ov?' style="color:var(--dn);"':''}}><td><strong>${x(e.nick)}</strong></td><td>${idxBadge(e.idx)}</td><td>${x(e.rk)||'-'}</td><td><span class="st-badge">${x(e.status)}</span></td><td>${x(e.visitDate)||'-'}</td><td${ov?' style="font-weight:600;"':''}>${x(e.postDeadline)||'-'}</td></tr>`;}).join('')}
+        </tbody></table></div>`:'<div style="padding:10px;font-size:11px;color:var(--m);">해당 상태 없음</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleProgBiz(header){const body=header.nextElementSibling;if(body)body.style.display=body.style.display==='none'?'':'none';}
+function setProgFilter(pid,bizId,status){progressFilters[pid+bizId]=status;renderProgress(pid);}
+
+// ════ 엑셀 ════
+function initExcel(pid){
+  const sel=pE(pid,'excel_year')||E(mk(pid,'excel_year'));if(!sel)return;
+  const cur=new Date().getFullYear();
+  sel.innerHTML=[cur-1,cur,cur+1].map(y=>`<option value="${y}"${y===cur?' selected':''}>${y}년</option>`).join('');
+  const ml=pE(pid,'excel_monthlist')||E(mk(pid,'excel_monthlist'));
+  if(ml)ml.innerHTML=Array.from({length:12},(_,i)=>i+1).map(m=>`<label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;"><input type="checkbox" value="${m}" onchange="updateExcelPreview('${pid}')"> ${m}월</label>`).join('');
+  const bl=pE(pid,'excel_bizlist')||E(mk(pid,'excel_bizlist'));
+  if(bl)bl.innerHTML=BIZ.map(b=>`<label class="check-bl-item"><input type="checkbox" value="${b.id}" onchange="updateExcelPreview('${pid}')"><span>${x(b.name)}</span></label>`).join('');
+  updateExcelPreview(pid);
+}
+function updateExcelPreview(pid){
+  const year=(pE(pid,'excel_year')||E(mk(pid,'excel_year'))||{value:''}).value;
+  const months=[...document.querySelectorAll(`#${mk(pid,'excel_monthlist')} input:checked`)].map(i=>parseInt(i.value));
+  const bizIds=[...document.querySelectorAll(`#${mk(pid,'excel_bizlist')} input:checked`)].map(i=>i.value);
+  const prev=pE(pid,'excel_preview')||E(mk(pid,'excel_preview'));if(!prev)return;
+  if(!bizIds.length||!months.length){prev.textContent='업체와 월을 선택하세요.';return;}
+  let cnt=0;bizIds.forEach(bizId=>{EXISTB.forEach(b=>{(b.history||[]).forEach(h=>{if(h.bizId!==bizId||!h.visitDate)return;const[y,m]=h.visitDate.split('-').map(Number);if(String(y)===year&&months.includes(m))cnt++;});});});
+  prev.textContent=`예상 ${cnt}건의 데이터`;
+}
+function exportExcel(pid){
+  const year=(pE(pid,'excel_year')||E(mk(pid,'excel_year'))||{value:''}).value;
+  const months=[...document.querySelectorAll(`#${mk(pid,'excel_monthlist')} input:checked`)].map(i=>parseInt(i.value));
+  const bizIds=[...document.querySelectorAll(`#${mk(pid,'excel_bizlist')} input:checked`)].map(i=>i.value);
+  if(!bizIds.length){alert('업체를 선택해주세요.');return;}if(!months.length){alert('월을 선택해주세요.');return;}
+  bizIds.forEach(bizId=>{
+    const biz=BIZ.find(b=>b.id===bizId);const rows=[];
+    EXISTB.forEach(b=>{(b.history||[]).forEach(h=>{if(h.bizId!==bizId||!h.visitDate)return;const[y,m]=h.visitDate.split('-').map(Number);if(String(y)!==year||!months.includes(m))return;rows.push([b.nick,b.name,b.email,b.url,b.phone,b.idx,b.rk,b.lv,b.rank,b.sc,b.accountNum,b.ssn,b.exclRegion,b.collectedDate,b.expiryDate,h.visitDate,h.kw,h.kws,h.cond,h.postUrl]);});});
+    if(!rows.length)return;
+    const ws=XLSX.utils.aoa_to_sheet([['닉네임','이름','이메일','블로그','연락처','IDX','RK','LV','순위','SC','계좌번호','주민번호','제외지역','정보수집일','정보파기일','방문일','검색어','검색어사이즈','조건','포스팅URL'],...rows]);
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'체험단내역');
+    XLSX.writeFile(wb,`체험단_${biz?biz.name:'업체'}_${year}_${months.join(',')}.xlsx`);
+  });
+  toast('✓ 엑셀 파일 생성됨','var(--a2)');
+}
+
+// ════ 캘린더 ════
+const calState={};
+function initCalS(pid){if(!calState[pid]){const n=new Date();calState[pid]={year:n.getFullYear(),month:n.getMonth()};}}
+function calNav(pid,dir){initCalS(pid);const s=calState[pid];s.month+=dir;if(s.month<0){s.month=11;s.year--;}if(s.month>11){s.month=0;s.year++;}renderCal(pid);}
+function calNow(pid){const n=new Date();calState[pid]={year:n.getFullYear(),month:n.getMonth()};renderCal(pid);}
+const DN=['일','월','화','수','목','금','토'];
+function renderCal(pid){
+  initCalS(pid);const s=calState[pid];
+  const tEl=pE(pid,'cal_title')||E(mk(pid,'cal_title'));if(!tEl)return;
+  tEl.textContent=`${s.year}년 ${s.month+1}월`;
+  const dn=pE(pid,'cal_daynames')||E(mk(pid,'cal_daynames'));if(dn)dn.innerHTML=DN.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  const first=new Date(s.year,s.month,1).getDay();const daysInM=new Date(s.year,s.month+1,0).getDate();const prevD=new Date(s.year,s.month,0).getDate();
+  const today=ISO();const cells=[];
+  for(let i=first-1;i>=0;i--)cells.push({date:null,day:prevD-i,other:true});
+  for(let d=1;d<=daysInM;d++){const ds=`${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;cells.push({date:ds,day:d,other:false});}
+  while(cells.length%7!==0)cells.push({date:null,day:0,other:true});
+  const visitMap={};BIZB.forEach(e=>{if(e.visitDate){if(!visitMap[e.visitDate])visitMap[e.visitDate]=[];visitMap[e.visitDate].push(e.nick);}});
+  const grid=pE(pid,'cal_grid')||E(mk(pid,'cal_grid'));if(!grid)return;
+  grid.innerHTML=cells.map(c=>{
+    if(!c.date)return`<div class="cal-day other-month"><div class="cal-day-num" style="color:var(--m);">${c.day||''}</div></div>`;
+    const isT=c.date===today;const visits=visitMap[c.date]||[];const customs=CALEVENTS.filter(e=>e.date===c.date);
+    const contracts=c.day===1?BIZ.filter(b=>b.contractStart).map(b=>{const mo=monthsDiff(b.contractStart);return`📋${b.name}(${mo}m)`;}):[]; 
+    return`<div class="cal-day${isT?' today':''}" onclick="calOpenEvent('${pid}','${c.date}')">
+      <div class="cal-day-num">${c.day}</div>
+      ${contracts.map(t=>`<div class="cal-event contract" title="${t}">${t}</div>`).join('')}
+      ${visits.map(n=>`<div class="cal-event visit">👤${n}</div>`).join('')}
+      ${customs.map(e=>`<div class="cal-event custom">${e.text}</div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function calOpenEvent(pid,dateStr){
+  const ep=pE(pid,'cal_evpanel')||E(mk(pid,'cal_evpanel'));if(!ep)return;
+  const evdate=pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'));if(evdate)evdate.value=dateStr;
+  const evtext=pE(pid,'cal_evtext')||E(mk(pid,'cal_evtext'));if(evtext)evtext.value='';
+  const evid=pE(pid,'cal_evid')||E(mk(pid,'cal_evid'));if(evid)evid.value='';
+  const db2=pE(pid,'cal_delbtn')||E(mk(pid,'cal_delbtn'));if(db2)db2.style.display='none';
+  const t=pE(pid,'cal_evtitle')||E(mk(pid,'cal_evtitle'));if(t)t.textContent=`일정 추가 - ${dateStr}`;
+  ep.style.display='block';
+}
+async function saveCalEvent(pid){
+  const date=(pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'))||{value:''}).value;const text=(pE(pid,'cal_evtext')||E(mk(pid,'cal_evtext'))||{value:''}).value;
+  if(!date||!text){alert('날짜와 내용을 입력해주세요.');return;}
+  const id=(pE(pid,'cal_evid')||E(mk(pid,'cal_evid'))||{value:''}).value||uid();
+  await fsSet('calEvents',id,{date,text});
+  const ep=pE(pid,'cal_evpanel')||E(mk(pid,'cal_evpanel'));if(ep)ep.style.display='none';
+  toast('✓ 일정 저장됨','var(--a2)');
+}
+async function delCalEvent(pid){
+  const id=(pE(pid,'cal_evid')||E(mk(pid,'cal_evid'))||{value:''}).value;if(!id)return;
+  await fsDel('calEvents',id);const ep=pE(pid,'cal_evpanel')||E(mk(pid,'cal_evpanel'));if(ep)ep.style.display='none';toast('삭제됨','var(--m)');
+}
+
+// ════ 업체 관리 (FIX 4: 즉시 로컬 업데이트) ════
+function getBizStatus(b){if(!b.contractEnd)return'진행';return b.contractEnd>=ISO()?'진행':'종료';}
+function renderBizM(pid){
+  const tb=pE(pid,'biz_tbody')||E(mk(pid,'biz_tbody'));if(!tb)return;
+  const cnt=pE(pid,'biz_count')||E(mk(pid,'biz_count'));if(cnt)cnt.textContent=BIZ.length+'개';
+  const sortBy=(pE(pid,'biz_sort')||E(mk(pid,'biz_sort'))||{value:'status'}).value;
+  const list=[...BIZ].sort((a,b)=>{
+    const sa=getBizStatus(a),sb=getBizStatus(b);
+    if(sortBy==='status'){if(sa!==sb)return sa==='진행'?-1:1;return(b.contractStart||'').localeCompare(a.contractStart||'');}
+    if(sortBy==='contractDate')return(b.contractStart||'').localeCompare(a.contractStart||'');
+    if(sortBy==='region')return(a.reg||'').localeCompare(b.reg||'','ko');
+    return 0;
+  });
+  if(!list.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="empty-icon">🏢</div><div class="empty-text">업체를 추가하세요.</div></div></td></tr>`;return;}
+  const today=ISO();
+  tb.innerHTML=list.map(b=>{
+    const status=getBizStatus(b);const months=b.contractStart?monthsDiff(b.contractStart):'-';
+    return`<tr>
+      <td><span style="font-size:10px;font-weight:700;color:${status==='진행'?'var(--a2)':'var(--dn)'};">${status}</span></td>
+      <td><strong>${x(b.name)}</strong>${b.contractStart?`<span style="font-size:10px;color:var(--m);margin-left:4px;">(${months}개월)</span>`:''}</td>
+      <td style="font-size:11px;color:var(--m);">${x(b.reg)||'-'}</td>
+      <td style="font-size:11px;font-family:'DM Mono',monospace;">${x(b.contractStart)||'-'}</td>
+      <td style="font-size:11px;font-family:'DM Mono',monospace;${b.contractEnd&&b.contractEnd<today?'color:var(--dn);':''}">${x(b.contractEnd)||'-'}</td>
+      <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl">링크↗</a>`:'-'}</td>
+      <td>${b.form?`<a href="${x(b.form)}" target="_blank" class="bl">폼↗</a>`:'-'}</td>
+      <td style="font-size:11px;color:var(--m);">${x(b.visit)||'-'}</td>
+      <td style="font-size:11px;color:var(--m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(b.r2)||'-'}</td>
+      <td style="font-size:11px;color:var(--m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(b.r3)||'-'}</td>
+      <td><div class="fl" style="gap:3px;">
+        <button class="btn btn-s btn-xs" onclick="editBiz('${pid}','${b.id}')">수정</button>
+        <button class="btn btn-d btn-xs" onclick="delBiz('${pid}','${b.id}')">삭제</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// FIX 4: submitBiz - 즉시 BIZ 배열 업데이트
+async function submitBiz(pid){
+  const name=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!name){alert('업체명을 입력해주세요.');return;}
+  const editId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
+  const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value.trim();
+  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r2:gv('b_r2'),r3:gv('b_r3')};
+  const id=editId||uid();
+  // 즉시 로컬 업데이트 (Firebase 응답 기다리지 않고)
+  const idx=BIZ.findIndex(b=>b.id===id);
+  if(idx>=0)BIZ[idx]={id,...BIZ[idx],...entry};else BIZ.push({id,...entry});
+  // 모든 패널 렌더링
+  panels.forEach(p=>{if(p.pageKey==='bizm')renderBizM(p.id);});
+  fillAllBizSels();
+  // Firebase 저장 (백그라운드)
+  if(db){fsSet('businesses',id,entry).catch(e=>toast('Firebase 저장 오류: '+e.message,'var(--dn)'));}
+  cancelBizEdit(pid);
+  toast('✓ 저장됨','var(--a2)');
+}
+
+function editBiz(pid,id){
+  const b=BIZ.find(b=>b.id===id);if(!b)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r2',b.r2);sv('b_r3',b.r3);
+  const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
+  const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
+  const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
+}
+async function delBiz(pid,id){
+  if(!confirm('업체 삭제? 해당 업체 블로거·키워드 데이터도 삭제됩니다.'))return;
+  BIZ=BIZ.filter(b=>b.id!==id);fillAllBizSels();
+  panels.forEach(p=>{if(p.pageKey==='bizm')renderBizM(p.id);});
+  if(db){await fsDel('businesses',id);const bd=BIZB.filter(e=>e.bizId===id).map(e=>fsDel('bizBloggers',e.id));const kd=KWDS.filter(k=>k.bizId===id).map(k=>fsDel('keywords',k.id));await Promise.all([...bd,...kd]);}
+  toast('삭제됨','var(--dn)');
+}
+function cancelBizEdit(pid){
+  ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
+  const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
+  const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
+}
+
+// ════ 키워드 관리 ════
+function initKwm(pid){
+  const sel=pE(pid,'bizsel')||E(mk(pid,'bizsel'));if(!sel)return;
+  sel.innerHTML='<option value="">-- 업체 선택 --</option>'+BIZ.map(b=>`<option value="${b.id}">${x(b.name)}</option>`).join('');
+}
+function renderKeywords(pid){
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;
+  const container=pE(pid,'kw_list')||E(mk(pid,'kw_list'));if(!container)return;
+  const list=KWDS.filter(k=>k.bizId===bizId);
+  if(!list.length){container.innerHTML='<div class="empty"><div class="empty-icon">🔑</div><div class="empty-text">키워드를 추가하세요.</div></div>';return;}
+  container.innerHTML=list.map(k=>`<div class="kw-item" onclick="editKw('${pid}','${k.id}')"><div class="kw-name">${x(k.name)}</div><div class="kw-meta">사이즈: ${x(k.size)||'-'} | 경쟁강도: ${x(k.comp)||'-'} | 스마트블록: ${x(k.smartSummary)||'-'}</div></div>`).join('');
+}
+function openKwAdd(pid){
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;if(!bizId){alert('업체를 먼저 선택하세요.');return;}
+  ['kw_id','kw_name','kw_size','kw_comp','kw_smart'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.value='';});
+  const t=pE(pid,'kw_formtitle')||E(mk(pid,'kw_formtitle'));if(t)t.textContent='키워드 추가';
+  const fp=pE(pid,'kw_formpanel')||E(mk(pid,'kw_formpanel'));if(fp)fp.style.display='block';
+}
+function editKw(pid,id){
+  const k=KWDS.find(k=>k.id===id);if(!k)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('kw_id',k.id);sv('kw_name',k.name);sv('kw_size',k.size);sv('kw_comp',k.comp);sv('kw_smart',k.smartRaw||'');
+  const t=pE(pid,'kw_formtitle')||E(mk(pid,'kw_formtitle'));if(t)t.textContent='키워드 수정';
+  const fp=pE(pid,'kw_formpanel')||E(mk(pid,'kw_formpanel'));if(fp)fp.style.display='block';
+  calcSmartPrev(pid);
+}
+function calcSmartPrev(pid){
+  const raw=(pE(pid,'kw_smart')||E(mk(pid,'kw_smart'))||{value:''}).value;const prev=pE(pid,'kw_smartprev')||E(mk(pid,'kw_smartprev'));if(!prev)return;
+  if(!raw.trim()){prev.textContent='';return;}
+  const entries=raw.trim().split(/\s+/).map(s=>{const[lv,rk]=s.split('/');return{lv:parseFloat(lv)||0,rk:parseFloat(rk)||0};}).filter(e=>e.lv>0);
+  if(!entries.length){prev.textContent='';return;}
+  const lvs=entries.map(e=>e.lv);const maxRk=Math.max(...entries.map(e=>e.rk));
+  const minLv=Math.min(...lvs),maxLv=Math.max(...lvs);
+  prev.textContent=`→ ${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`} / 순위 ${maxRk}위`;
+}
+async function saveKeyword(pid){
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;if(!bizId)return;
+  const name=(pE(pid,'kw_name')||E(mk(pid,'kw_name'))||{value:''}).value.trim();if(!name){alert('키워드를 입력하세요.');return;}
+  const raw=(pE(pid,'kw_smart')||E(mk(pid,'kw_smart'))||{value:''}).value;
+  const entries=raw.trim().split(/\s+/).map(s=>{const[lv,rk]=s.split('/');return{lv:parseFloat(lv)||0,rk:parseFloat(rk)||0};}).filter(e=>e.lv>0);
+  let smartSummary='';
+  if(entries.length){const lvs=entries.map(e=>e.lv);const maxRk=Math.max(...entries.map(e=>e.rk));const minLv=Math.min(...lvs),maxLv=Math.max(...lvs);smartSummary=`${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`}/순위${maxRk}위`;}
+  const editId=(pE(pid,'kw_id')||E(mk(pid,'kw_id'))||{value:''}).value;
+  await fsSet('keywords',editId||uid(),{bizId,name,size:(pE(pid,'kw_size')||E(mk(pid,'kw_size'))||{value:''}).value,comp:(pE(pid,'kw_comp')||E(mk(pid,'kw_comp'))||{value:''}).value,smartRaw:raw,smartEntries:entries,smartSummary,addedDate:ISO()});
+  const fp=pE(pid,'kw_formpanel')||E(mk(pid,'kw_formpanel'));if(fp)fp.style.display='none';
+  toast('✓ 키워드 저장됨','var(--a2)');
+}
+
+// ════ 키워드 추천 ════
+function initKwrec(pid){
+  const sel=pE(pid,'bizsel')||E(mk(pid,'bizsel'));if(!sel)return;
+  sel.innerHTML='<option value="">-- 업체 선택 --</option>'+BIZ.map(b=>`<option value="${b.id}">${x(b.name)}</option>`).join('');
+}
+function loadRecBiz(pid){
+  if(!recState[pid])recState[pid]={kws:new Set(),blogger:null};
+  recState[pid].kws.clear();recState[pid].blogger=null;
+  const bizId=(pE(pid,'bizsel')||E(mk(pid,'bizsel'))||{value:''}).value;
+  const kws=KWDS.filter(k=>k.bizId===bizId).sort((a,b)=>(String(b.size)||'').localeCompare(String(a.size)||''));
+  const kl=pE(pid,'rec_kwlist')||E(mk(pid,'rec_kwlist'));
+  if(kl)kl.innerHTML=kws.length?kws.map(k=>`<div class="kw-item" id="${mk(pid,'rkw_'+k.id)}" onclick="toggleRecKw('${pid}','${k.id}')"><div class="kw-name">${x(k.name)}</div><div class="kw-meta">사이즈: ${x(k.size)||'-'} | ${x(k.smartSummary)||'-'}</div></div>`).join(''):'<div style="color:var(--m);font-size:11px;padding:8px;">키워드 없음</div>';
+  const bl=pE(pid,'rec_blist')||E(mk(pid,'rec_blist'));
+  const bloggers=BIZB.filter(e=>e.bizId===bizId);
+  if(bl)bl.innerHTML=bloggers.length?bloggers.map(b=>`<div class="sri" id="${mk(pid,'rbl_'+b.id)}" onclick="selectRecBlogger('${pid}','${b.id}')"><div><strong>${x(b.nick)}</strong><div style="font-size:10px;color:var(--m);">IDX:${x(b.idx)||'-'} RK:${x(b.rk)||'-'} LV:${x(b.lv)||'-'} 순위:${x(b.rank)||'-'}</div></div></div>`).join(''):'<div style="padding:10px;font-size:11px;color:var(--m);">블로거 없음</div>';
+  showRecResult(pid);
+}
+function toggleRecKw(pid,id){
+  if(!recState[pid])recState[pid]={kws:new Set(),blogger:null};
+  if(recState[pid].kws.has(id))recState[pid].kws.delete(id);else recState[pid].kws.add(id);
+  document.querySelectorAll(`[id^="${mk(pid,'rkw_')}"]`).forEach(el=>{const kwId=el.id.replace(mk(pid,'rkw_'),'');el.classList.toggle('selected',recState[pid].kws.has(kwId));});
+  showRecResult(pid);
+}
+function selectRecBlogger(pid,id){
+  if(!recState[pid])recState[pid]={kws:new Set(),blogger:null};
+  recState[pid].blogger=id;
+  document.querySelectorAll(`[id^="${mk(pid,'rbl_')}"]`).forEach(el=>{const bId=el.id.replace(mk(pid,'rbl_'),'');el.style.background=bId===id?'rgba(91,94,244,.08)':'';});
+  showRecResult(pid);
+}
+function showRecResult(pid){
+  const st=recState[pid]||{};const rp=pE(pid,'rec_result')||E(mk(pid,'rec_result'));const re=pE(pid,'rec_empty')||E(mk(pid,'rec_empty'));
+  if(!st.blogger||!st.kws||st.kws.size===0){if(rp)rp.style.display='none';if(re)re.style.display='block';return;}
+  if(rp)rp.style.display='block';if(re)re.style.display='none';
+  const b=BIZB.find(e=>e.id===st.blogger);
+  const bi=pE(pid,'rec_binfo')||E(mk(pid,'rec_binfo'));if(bi&&b)bi.innerHTML=`<div class="ctitle">블로거 정보</div><div style="font-size:12px;"><strong>${x(b.nick)}</strong><br>IDX: ${idxBadge(b.idx)}<br><span style="font-size:11px;color:var(--m);">RK: ${x(b.rk)||'-'} | LV: ${x(b.lv)||'-'} | 순위: ${x(b.rank)||'-'} | SC: ${x(b.sc)||'-'}</span></div>`;
+  const selKws=[...st.kws].map(id=>KWDS.find(k=>k.id===id)).filter(Boolean);
+  const ki=pE(pid,'rec_kinfo')||E(mk(pid,'rec_kinfo'));if(ki)ki.innerHTML=`<div class="ctitle">선택 키워드 (${selKws.length}개)</div>`+selKws.map(k=>`<div class="kw-item"><div class="kw-name">${x(k.name)}</div><div class="kw-meta">사이즈: ${x(k.size)||'-'} | 경쟁강도: ${x(k.comp)||'-'} | 스마트블록: ${x(k.smartSummary)||'-'}</div></div>`).join('');
+}
+
+// ════ 설정 ════
+function renderSettings(pid){
+  const el=pE(pid,'fb_status')||E(mk(pid,'fb_status'));
+  if(el)el.textContent=db?`✓ Firebase 연결됨 (${FB_CFG.projectId})`:'✗ Firebase 미연결 - FB_CFG를 입력해주세요.';
+  if(el)el.className=db?'notice n-ok':'notice n-w';
+  const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('nw_cid',settings.clientId);sv('nw_cs',settings.clientSecret);sv('nw_uid',settings.userId);sv('nw_token',settings.accessToken);
+  const kt=pE(pid,'kakao_token')||E(mk(pid,'kakao_token'));if(kt)kt.value=localStorage.getItem('mm_kakao')||'';
+}
+function saveNWSettings(pid){
+  const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value;
+  const settings={clientId:gv('nw_cid'),clientSecret:gv('nw_cs'),userId:gv('nw_uid'),accessToken:gv('nw_token')};
+  localStorage.setItem('mm_nw',JSON.stringify(settings));toast('✓ 네이버웍스 설정 저장됨','var(--a2)');
+}
+async function testNWMail(pid){
+  const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
+  if(!settings.accessToken||!settings.userId){alert('설정을 먼저 저장해주세요.');return;}
+  const testTo=prompt('테스트 메일 주소:');if(!testTo)return;
+  try{await sendNWMail(settings,testTo,'[테스트] 마인즈마케팅','네이버웍스 메일 테스트입니다.');toast('✓ 테스트 메일 발송됨','var(--a2)');}
+  catch(e){toast('발송 실패: '+e.message,'var(--dn)');}
+}
+function saveKakaoSettings(pid){localStorage.setItem('mm_kakao',(pE(pid,'kakao_token')||E(mk(pid,'kakao_token'))||{value:''}).value||'');toast('✓ 카카오 설정 저장됨','var(--a2)');}
+
+// ════ START ════
+document.addEventListener('DOMContentLoaded',()=>{
+  startListeners();
+});
+</script>
+</body>
+</html>
