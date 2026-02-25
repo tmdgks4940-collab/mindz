@@ -286,7 +286,7 @@ function startListeners(){
     return;
   }
   let n=0;
-  const done=()=>{if(++n>=5){E('loading').classList.add('hide');addPanel('nb');}};
+  const done=()=>{if(++n===5){E('loading').classList.add('hide');addPanel('nb');}};
   db.collection('newBloggers').onSnapshot(s=>{NEWB=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='nb')initNB(p.id);});done();},()=>done());
   db.collection('existingBloggers').onSnapshot(s=>{EXISTB=s.docs.map(d=>({id:d.id,...d.data()}));panels.forEach(p=>{if(p.pageKey==='eb')initEB(p.id);});done();},()=>done());
   db.collection('businesses').onSnapshot(s=>{BIZ=s.docs.map(d=>({id:d.id,...d.data()}));fillAllBizSels();panels.forEach(p=>{if(p.pageKey==='bizm')renderBizM(p.id);});done();},()=>done());
