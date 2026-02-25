@@ -225,7 +225,7 @@ function renderAppBody(){
 
 function buildPanelHTML({id,pageKey}){
   const showClose=panels.length>1;
-  const navTabs=PAGE_DEFS.map(d=>`<button class="pnav-tab${d.k===pageKey?' active':''}" onclick="setPanelPage('${id}','${d.k}')">${d.l}</button>`).join('');
+  const navTabs=PAGE_DEFS.map(d=>`<button class="pnav-tab${d.k===pageKey?' active':''}" onclick="addPanel('${d.k}')">${d.l}</button>`).join('');
   return`<div class="panel" id="${id}">
     <div class="panel-nav">${navTabs}${showClose?`<button class="panel-close" onclick="removePanel('${id}')">✕</button>`:''}</div>
     <div class="panel-content" id="c_${id}">${getPageHTML(pageKey,id)}</div>
