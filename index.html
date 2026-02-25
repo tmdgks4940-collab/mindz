@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#0f0f12;--sf:#17171d;--sf2:#1e1e27;--bd:#2a2a38;--a:#5b5ef4;--a2:#38d9a9;--a3:#f7c948;--t:#e8e8f0;--m:#7a7a9a;--dn:#f06565;--end:#a78bfa;--pay:#40c97f;}
@@ -134,14 +135,34 @@ a.bl{color:var(--a);text-decoration:none;font-size:11px;}a.bl:hover{text-decorat
 #loading.hide{display:none;}
 .spinner{width:36px;height:36px;border:3px solid var(--bd);border-top:3px solid var(--a);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;}
+#login-screen.hide{display:none;}
+.login-box{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:40px 36px;width:340px;display:flex;flex-direction:column;gap:16px;}
+.login-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}.login-title span{color:var(--a);}
+.login-sub{font-size:11px;color:var(--m);text-align:center;margin-top:-8px;}
+.login-box input{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:10px 12px;color:var(--t);font-size:13px;font-family:inherit;}
+.login-box input:focus{outline:none;border-color:var(--a);}
+.login-btn{width:100%;padding:11px;background:var(--a);color:#fff;border:none;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.login-btn:hover{opacity:.88;}
+.login-err{font-size:11px;color:var(--dn);text-align:center;min-height:16px;}
 </style>
 </head>
 <body>
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">마인즈<span>마케팅</span></div>
+    <div class="login-sub">블로그 체험단 관리 시스템</div>
+    <input type="email" id="login-email" placeholder="이메일" onkeydown="if(event.key==='Enter')doLogin()">
+    <input type="password" id="login-pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+  </div>
+</div>
 <div id="loading"><div class="spinner"></div><div style="font-size:12px;color:var(--m);">Firebase 연결 중...</div></div>
 <div id="toast" class="toast"></div>
 <header>
   <div class="logo">마인즈<span>마케팅</span><small>블로그 체험단 관리</small></div>
-  <div class="fl"><span id="sync-dot" style="font-size:10px;color:var(--m);">●</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m);">v9.1</span></div>
+  <div class="fl"><span id="sync-dot" style="font-size:10px;color:var(--m);">●</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m);">v9.1</span><span id="login-user" style="font-size:11px;color:var(--m);margin-left:10px;"></span><button onclick="doLogout()" style="margin-left:8px;font-size:11px;background:none;border:1px solid var(--bd);color:var(--m);border-radius:5px;padding:3px 8px;cursor:pointer;">로그아웃</button></div>
 </header>
 <div class="chrome-tabbar" id="ctbar"></div>
 <div class="app-body" id="appbody"></div>
@@ -157,8 +178,8 @@ const FB_CFG={
   messagingSenderId:"266278944187",
   appId:"1:266278944187:web:90af2f4126e2ebe294d89e"
 };
-let db;
-try{firebase.initializeApp(FB_CFG);db=firebase.firestore();}catch(e){console.warn(e);}
+let db,auth;
+try{firebase.initializeApp(FB_CFG);db=firebase.firestore();auth=firebase.auth();}catch(e){console.warn(e);}
 
 // ════ STATE ════
 let NEWB=[],EXISTB=[],BIZ=[],BIZB=[],KWDS=[],CALEVENTS=[];
@@ -1616,9 +1637,51 @@ async function testNWMail(pid){
 }
 function saveKakaoSettings(pid){localStorage.setItem('mm_kakao',(pE(pid,'kakao_token')||E(mk(pid,'kakao_token'))||{value:''}).value||'');toast('✓ 카카오 설정 저장됨','var(--a2)');}
 
+// ════ LOGIN ════
+async function doLogin(){
+  const email=E('login-email').value.trim();
+  const pw=E('login-pw').value;
+  const err=E('login-err');
+  if(!email||!pw){err.textContent='이메일과 비밀번호를 입력하세요.';return;}
+  err.textContent='';
+  try{
+    await auth.signInWithEmailAndPassword(email,pw);
+  }catch(e){
+    const msg={
+      'auth/invalid-email':'이메일 형식이 올바르지 않습니다.',
+      'auth/user-not-found':'등록되지 않은 이메일입니다.',
+      'auth/wrong-password':'비밀번호가 틀렸습니다.',
+      'auth/invalid-credential':'이메일 또는 비밀번호가 틀렸습니다.',
+      'auth/too-many-requests':'너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요.'
+    };
+    err.textContent=msg[e.code]||'로그인 실패: '+e.message;
+  }
+}
+async function doLogout(){
+  if(!confirm('로그아웃 하시겠습니까?'))return;
+  await auth.signOut();
+}
+
 // ════ START ════
 document.addEventListener('DOMContentLoaded',()=>{
-  startListeners();
+  if(!auth){
+    E('login-screen').classList.add('hide');
+    startListeners();
+    return;
+  }
+  auth.onAuthStateChanged(user=>{
+    if(user){
+      E('login-screen').classList.add('hide');
+      const userEl=E('login-user');if(userEl)userEl.textContent=user.email;
+      if(panels.length===0)startListeners();
+    }else{
+      E('login-screen').classList.remove('hide');
+      E('loading').classList.add('hide');
+      panels.length=0;
+      const body=E('appbody');if(body)body.innerHTML='';
+      const bar=E('ctbar');if(bar)bar.innerHTML='';
+    }
+  });
 });
 </script>
 </body>
