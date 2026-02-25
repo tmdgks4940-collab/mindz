@@ -225,7 +225,7 @@ function renderAppBody(){
 
 function buildPanelHTML({id,pageKey}){
   const showClose=panels.length>1;
-  const navTabs=PAGE_DEFS.map(d=>`<button class="pnav-tab${d.k===pageKey?' active':''}" onclick="addPanel('${d.k}')">${d.l}</button>`).join('');
+  const navTabs=PAGE_DEFS.map(d=>`<button class="pnav-tab${d.k===pageKey?' active':''}" onclick="setPanelPage('${id}','${d.k}')">${d.l}</button>`).join('');
   return`<div class="panel" id="${id}">
     <div class="panel-nav">${navTabs}${showClose?`<button class="panel-close" onclick="removePanel('${id}')">✕</button>`:''}</div>
     <div class="panel-content" id="c_${id}">${getPageHTML(pageKey,id)}</div>
@@ -322,8 +322,9 @@ function nbHTML(pid){const p=pid+'_';return`
   <div class="g4" style="margin-bottom:7px;">
     <div class="fg"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="블로거 닉네임"></div>
     <div class="fg"><label class="lbl">이메일</label><input id="${p}nb_email" type="email"></div>
-    <div class="fg"><label class="lbl">IDX</label><select id="${p}nb_idx"><option value="">선택</option></select></div>
     <div class="fg"><label class="lbl">블로그 주소</label><input id="${p}nb_url" placeholder="https://blog.naver.com/..."></div>
+    <div class="fg"><label class="lbl">IDX</label><select id="${p}nb_idx"><option value="">선택</option></select></div>
+    
   </div>
   <div class="g3" style="margin-bottom:7px;">
     <div class="fg"><label class="lbl">RK</label><input id="${p}nb_rk"></div>
