@@ -1299,7 +1299,8 @@ async function sendMailBulk(pid){
 }
 
 async function sendNWMail(settings,to,subject,body){
-  const res=await fetch(`https://www.worksapis.com/v1.0/users/${encodeURIComponent(settings.userId)}/mails`,{
+  const proxyUrl=`https://mindz-mail-proxy.tmdgks4940.workers.dev/?target=mail&userId=${encodeURIComponent(settings.userId)}`;
+  const res=await fetch(proxyUrl,{
     method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${settings.accessToken}`},
     body:JSON.stringify({subject,body,to:[to],bodyType:'text/plain'})
   });
