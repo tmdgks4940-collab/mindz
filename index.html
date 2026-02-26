@@ -1302,7 +1302,7 @@ async function sendNWMail(settings,to,subject,body){
   const proxyUrl=`https://mindz-mail-proxy.tmdgks4940.workers.dev/?target=mail&userId=${encodeURIComponent(settings.userId)}`;
   const res=await fetch(proxyUrl,{
     method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${settings.accessToken}`},
-    body:JSON.stringify({subject,body,to:[{email:to}],contentType:"text"})
+    body:JSON.stringify({to,subject,body,contentType:"text",isSaveSentMail:true,isSendSeparately:false})
   });
   if(!res.ok)throw new Error(await res.text());
 }
