@@ -345,16 +345,16 @@ function nbHTML(pid){const p=pid+'_';return`
   <input type="hidden" id="${p}nb_id">
   <div style="display:flex;gap:12px;">
     <div style="flex:1;min-width:0;">
-      <div style="display:flex;gap:6px;margin-bottom:7px;">
-        <div class="fg" style="flex:0 0 auto;"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="닉네임" style="width:140px;" maxlength="20"></div>
+      <div style="display:flex;gap:6px;margin-bottom:7px;width:386px;">
+        <div class="fg"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="닉네임" style="width:140px;" maxlength="20"></div>
         <div class="fg" style="flex:1;"><label class="lbl">이메일</label><input id="${p}nb_email" type="email" style="width:100%;" maxlength="40"></div>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:7px;">
+      <div style="display:flex;gap:6px;margin-bottom:7px;width:386px;">
         <div class="fg" style="flex:1;"><label class="lbl">블로그 주소</label><input id="${p}nb_url" placeholder="https://blog.naver.com/..." style="width:100%;"></div>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:7px;">
-        <div class="fg" style="flex:0 0 90px;"><label class="lbl">IDX</label><select id="${p}nb_idx" style="width:90px;"><option value="">선택</option></select></div>
-        <div class="fg" style="flex:0 0 60px;"><label class="lbl">RK</label><input id="${p}nb_rk" style="width:60px;"></div>
+      <div style="display:flex;gap:6px;margin-bottom:7px;width:386px;">
+        <div class="fg"><label class="lbl">IDX</label><select id="${p}nb_idx" style="width:90px;"><option value="">선택</option></select></div>
+        <div class="fg"><label class="lbl">RK</label><input id="${p}nb_rk" style="width:60px;"></div>
         <div class="fg" style="flex:1;"><label class="lbl">검색어</label><input id="${p}nb_kw" style="width:100%;" maxlength="10"></div>
         <div class="fg" style="flex:1;"><label class="lbl">사이즈</label><input id="${p}nb_kws" style="width:100%;" maxlength="10"></div>
       </div>
