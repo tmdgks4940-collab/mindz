@@ -41,7 +41,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:9px
 .stitle{font-size:16px;font-weight:700;margin-bottom:2px;color:var(--t);}
 .ssub{color:var(--m);font-size:11px;margin-bottom:10px;}
 .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
-.ctitle{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:7px;}
+.ctitle{font-size:12px;font-weight:700;color:var(--a);letter-spacing:.2px;margin-bottom:7px;}
 .lbl{font-size:11px;color:var(--m);display:block;margin-bottom:2px;}
 input,textarea,select{background:#fff;border:1px solid var(--bd);border-radius:8px;color:var(--t);font-family:'Noto Sans KR',sans-serif;font-size:12px;padding:6px 9px;outline:none;transition:border .15s;width:100%;}
 input:focus,textarea:focus,select:focus{border-color:var(--a);box-shadow:0 0 0 2px rgba(3,199,90,.1);}
@@ -63,12 +63,12 @@ textarea{resize:vertical;}select option{background:#fff;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 th{text-align:left;padding:8px 7px;color:var(--m);font-weight:600;border-bottom:2px solid var(--bd);font-size:11px;white-space:nowrap;cursor:pointer;user-select:none;}
 th:hover{color:var(--a);}
-td{padding:7px 7px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+td{padding:7px 7px;border-bottom:1px solid var(--bd);vertical-align:middle;color:#1a1a1a;font-weight:500;}
 tbody tr:hover td{background:rgba(3,199,90,.03);}
 .clickrow td{cursor:pointer;}
 .mono{font-family:'DM Mono',monospace;font-size:11px;color:var(--m);}
 .qpanel{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
-.qtitle{font-size:11px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.qtitle{font-size:13px;font-weight:700;color:var(--a);letter-spacing:.1px;margin-bottom:8px;}
 .empty{text-align:center;padding:24px;color:var(--m);}
 .empty-icon{font-size:24px;margin-bottom:4px;}.empty-text{font-size:11px;}
 .abar{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:5px;}
@@ -193,7 +193,7 @@ const IDX_LIST=['준최1','준최2','준최3','준최4','준최5','준최6','최
 const PAGE_DEFS=[
   {k:'nb',l:'신규 블로거'},{k:'eb',l:'기존 블로거'},{k:'biz4',l:'업체별 블로거'},
   {k:'mail',l:'메일 작성'},{k:'prog',l:'진행 현황'},{k:'excel',l:'엑셀 내보내기'},
-  {k:'cal',l:'일정 관리'},{k:'bizm',l:'업체 관리'},{k:'kwm',l:'키워드 관리'},
+  {k:'cal',l:'일정 관리'},{k:'bizm',l:'업체 관리'},
   {k:'kwrec',l:'키워드 추천'},{k:'set',l:'⚙ 설정'},
 ];
 
@@ -343,38 +343,43 @@ function nbHTML(pid){const p=pid+'_';return`
 <div class="qpanel">
   <div class="qtitle" id="${p}nb_ftitle">⚡ 블로거 추가</div>
   <input type="hidden" id="${p}nb_id">
-  <div class="g4" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="블로거 닉네임"></div>
-    <div class="fg"><label class="lbl">이메일</label><input id="${p}nb_email" type="email"></div>
-    <div class="fg"><label class="lbl">블로그 주소</label><input id="${p}nb_url" placeholder="https://blog.naver.com/..."></div>
-    <div class="fg"><label class="lbl">IDX</label><select id="${p}nb_idx"><option value="">선택</option></select></div>
-    
-  </div>
-  <div class="g3" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">RK</label><input id="${p}nb_rk"></div>
-    <div class="fg"><label class="lbl">검색어</label><input id="${p}nb_kw"></div>
-    <div class="fg"><label class="lbl">검색어 사이즈</label><input id="${p}nb_kws"></div>
-  </div>
-  <div class="fg" style="margin-bottom:7px;">
-    <label class="lbl">메모</label>
-    <div class="fl"><input id="${p}nb_mnew" placeholder="메모 내용" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();nbAddMemo('${pid}');}"><button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')">추가</button></div>
-  </div>
-  <div id="${p}nb_mlist" class="memo-list"></div>
-  <div style="display:flex;justify-content:flex-end;gap:6px;">
-    <button class="btn btn-s btn-sm" onclick="nbCancel('${pid}')">초기화</button>
-    <button class="btn btn-g" id="${p}nb_savebtn" onclick="nbSave('${pid}')">+ 추가</button>
+  <div style="display:flex;gap:12px;">
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;gap:6px;margin-bottom:7px;">
+        <div class="fg" style="flex:0 0 auto;"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="닉네임" style="width:140px;" maxlength="20"></div>
+        <div class="fg" style="flex:1;"><label class="lbl">이메일</label><input id="${p}nb_email" type="email" style="width:100%;"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:7px;">
+        <div class="fg" style="flex:1;"><label class="lbl">블로그 주소</label><input id="${p}nb_url" placeholder="https://blog.naver.com/..." style="width:100%;"></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:7px;">
+        <div class="fg" style="flex:0 0 90px;"><label class="lbl">IDX</label><select id="${p}nb_idx" style="width:90px;"><option value="">선택</option></select></div>
+        <div class="fg" style="flex:0 0 60px;"><label class="lbl">RK</label><input id="${p}nb_rk" style="width:60px;"></div>
+        <div class="fg" style="flex:1;"><label class="lbl">검색어</label><input id="${p}nb_kw" style="width:100%;" maxlength="10"></div>
+        <div class="fg" style="flex:1;"><label class="lbl">사이즈</label><input id="${p}nb_kws" style="width:100%;" maxlength="10"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;">
+        <button class="btn btn-s btn-sm" onclick="nbCancel('${pid}')">초기화</button>
+        <button class="btn btn-g" id="${p}nb_savebtn" onclick="nbSave('${pid}')">+ 추가</button>
+      </div>
+    </div>
+    <div style="width:180px;flex-shrink:0;">
+      <label class="lbl">메모</label>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <textarea id="${p}nb_mnew" placeholder="메모 내용 입력 후 추가" rows="3" style="width:100%;resize:none;" onkeydown="if(event.key==='Enter'&&event.shiftKey===false){event.preventDefault();nbAddMemo('${pid}');}"></textarea>
+        <button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')" style="align-self:flex-end;">추가</button>
+      </div>
+      <div id="${p}nb_mlist" class="memo-list" style="max-height:80px;overflow-y:auto;margin-top:4px;"></div>
+    </div>
   </div>
 </div>
 <div class="card">
   <div class="abar">
     <div><div class="ctitle">신규 블로거 목록</div><span id="${p}nb_count" class="mono">0명</span></div>
-    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:130px;font-size:11px;" oninput="renderNB('${pid}')">
-    <button class="btn btn-s btn-sm" onclick="sortNB('${pid}','idx')">IDX정렬</button>
-    <button class="btn btn-s btn-sm" onclick="sortNB('${pid}','rk')">RK정렬</button>
-    </div>
+    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:130px;font-size:11px;" oninput="renderNB('${pid}')"></div>
   </div>
   <div style="overflow-x:auto;"><table>
-    <thead><tr><th onclick="sortNB('${pid}','nick')">닉네임</th><th>이메일</th><th>블로그</th><th onclick="sortNB('${pid}','idx')">IDX</th><th onclick="sortNB('${pid}','rk')">RK</th><th>검색어</th><th>사이즈</th><th>메모</th><th>수정/삭제</th></tr></thead>
+    <thead><tr><th onclick="sortNB('${pid}','nick')">닉네임</th><th>이메일</th><th>블로그</th><th onclick="sortNB('${pid}','idx')">IDX</th><th onclick="sortNB('${pid}','rk')">RK</th><th>검색어</th><th>사이즈</th><th>메모</th><th>삭제</th></tr></thead>
     <tbody id="${p}nb_tbody"></tbody>
   </table></div>
   <div id="${p}nb_pager" class="pager"></div>
@@ -388,7 +393,7 @@ function ebHTML(pid){const p=pid+'_';return`
     <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">CSV</button></div>
   </div>
   <div style="overflow-x:auto;"><table>
-    <thead><tr><th onclick="sortEB('${pid}','nick')">닉네임</th><th>이름</th><th>이메일</th><th>블로그</th><th onclick="sortEB('${pid}','idx')">IDX</th><th onclick="sortEB('${pid}','rk')">RK</th><th onclick="sortEB('${pid}','lv')">LV</th><th onclick="sortEB('${pid}','rank')">순위</th><th onclick="sortEB('${pid}','sc')">SC</th></tr></thead>
+    <thead><tr><th onclick="sortEB('${pid}','nick')" style="white-space:nowrap;">닉네임</th><th style="white-space:nowrap;">이름</th><th style="white-space:nowrap;">이메일</th><th style="white-space:nowrap;">블로그</th><th onclick="sortEB('${pid}','idx')" style="white-space:nowrap;">IDX</th><th onclick="sortEB('${pid}','rk')" style="white-space:nowrap;">RK</th><th onclick="sortEB('${pid}','lv')" style="white-space:nowrap;">LV</th><th onclick="sortEB('${pid}','rank')" style="white-space:nowrap;">순위</th><th onclick="sortEB('${pid}','sc')" style="white-space:nowrap;">SC</th><th style="white-space:nowrap;">계좌</th><th style="white-space:nowrap;">제외지역</th><th style="white-space:nowrap;">수집일</th><th style="white-space:nowrap;">파기일</th></tr></thead>
     <tbody id="${p}eb_tbody"></tbody>
   </table></div>
   <div id="${p}eb_pager" class="pager"></div>
@@ -438,12 +443,10 @@ function ebHTML(pid){const p=pid+'_';return`
 
 function biz4HTML(pid){const p=pid+'_';return`
 <div class="stitle">업체별 블로거 리스트업</div><div class="ssub">업체를 선택하고 블로거를 추가·관리합니다.</div>
-<div class="card" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
-  <div class="fg" style="min-width:180px;flex:1;"><label class="lbl">업체 선택</label><select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')"><option value="">-- 업체를 선택하세요 --</option></select></div>
-  <div class="fl" style="flex-wrap:wrap;gap:5px;padding-bottom:1px;">
-    <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
-    <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">📋 구글폼 CSV</button>
-  </div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+  <select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')" style="width:180px;"><option value="">-- 업체 선택 --</option></select>
+  <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
+  <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">📋 구글폼 CSV</button>
 </div>
 <div class="qpanel" id="${p}biz4_addpanel" style="display:none;">
   <div class="qtitle">+ 블로거 추가</div>
@@ -630,13 +633,19 @@ function excelHTML(pid){return`<div class="stitle">체험단 진행 엑셀파일
   <div style="display:flex;justify-content:flex-end;"><button class="btn btn-g" onclick="exportExcel('${pid}')">📊 엑셀 파일 생성</button></div>
 </div>`;}
 
-function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="ssub">블로거 방문 일정 및 기타 일정 관리.</div>
-<div class="card">
-  <div class="cal-nav"><button onclick="calNav('${pid}',-1)">◀</button><div class="cal-title" id="${mk(pid,'cal_title')}"></div><button onclick="calNav('${pid}',1)">▶</button><button onclick="calNow('${pid}')" style="font-size:11px;">오늘</button></div>
-  <div class="cal-grid" id="${mk(pid,'cal_daynames')}"></div>
-  <div class="cal-grid" id="${mk(pid,'cal_grid')}" style="gap:3px;margin-top:3px;"></div>
+function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="ssub">업체별 방문 일정 및 기타 일정 관리.</div>
+<div style="display:flex;gap:12px;">
+  <div style="width:160px;flex-shrink:0;">
+    <div style="font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">업체 필터</div>
+    <div id="${mk(pid,'cal_biz_list')}" style="display:flex;flex-direction:column;gap:3px;"></div>
+  </div>
+  <div style="flex:1;min-width:0;">
+    <div class="cal-nav"><button onclick="calNav('${pid}',-1)">◀</button><div class="cal-title" id="${mk(pid,'cal_title')}"></div><button onclick="calNav('${pid}',1)">▶</button><button onclick="calNow('${pid}')" style="font-size:11px;">오늘</button></div>
+    <div class="cal-grid" id="${mk(pid,'cal_daynames')}"></div>
+    <div class="cal-grid" id="${mk(pid,'cal_grid')}" style="gap:4px;margin-top:4px;"></div>
+  </div>
 </div>
-<div class="qpanel" id="${mk(pid,'cal_evpanel')}" style="display:none;">
+<div class="qpanel" id="${mk(pid,'cal_evpanel')}" style="display:none;margin-top:12px;">
   <div class="qtitle" id="${mk(pid,'cal_evtitle')}">일정 추가</div>
   <input type="hidden" id="${mk(pid,'cal_evid')}">
   <div class="g2" style="margin-bottom:7px;">
@@ -675,6 +684,33 @@ function bizmHTML(pid){const p=pid+'_';return`
     <input type="hidden" id="${p}b_editid">
     <button class="btn btn-s btn-sm" onclick="cancelBizEdit('${pid}')">초기화</button>
     <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
+  </div>
+  <!-- 키워드 인라인 관리 (업체 수정 시에만 표시) -->
+  <div id="${p}b_kwsection" style="display:none;margin-top:12px;border-top:1px solid var(--bd);padding-top:12px;">
+    <div class="abar" style="margin-bottom:6px;">
+      <div class="ctitle" style="margin:0;">🔑 키워드 목록</div>
+      <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 키워드 추가</button>
+    </div>
+    <div id="${p}b_kwlist"></div>
+    <div id="${p}b_kwform" style="display:none;background:var(--sf2);border-radius:8px;padding:10px;margin-top:6px;">
+      <div class="ctitle" id="${p}b_kwformtitle" style="margin-bottom:7px;">키워드 추가</div>
+      <input type="hidden" id="${p}b_kwid">
+      <div style="display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;">
+        <div class="fg"><label class="lbl">키워드 *</label><input id="${p}b_kwname" placeholder="키워드" style="width:140px;"></div>
+        <div class="fg"><label class="lbl">키워드 사이즈</label><input id="${p}b_kwsize" style="width:90px;"></div>
+      </div>
+      <div style="margin-bottom:6px;">
+        <div class="abar" style="margin-bottom:4px;">
+          <label class="lbl" style="margin:0;">스마트블록</label>
+          <button class="btn btn-s btn-sm" onclick="addSmartBlock('${pid}')">+ 스마트블록 추가</button>
+        </div>
+        <div id="${p}b_sblist"></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;">
+        <button class="btn btn-s btn-sm" onclick="E('${pid}_b_kwform').style.display='none'">취소</button>
+        <button class="btn btn-g btn-sm" onclick="saveKwInline('${pid}')">저장</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="card">
@@ -865,19 +901,16 @@ function renderNB(pid){
   if(!pg.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">신규 블로거를 추가하세요.</div></div></td></tr>`;return;}
   tb.innerHTML=pg.map(b=>{
     const lm=(b.memos||[]).slice(-1)[0];
-    return`<tr${b.rejected?' style="opacity:.5;"':''}>
+    return`<tr class="clickrow"${b.rejected?' style="opacity:.5;"':''} onclick="if(!event.target.closest('button'))nbEdit('${pid}','${b.id}')">
       <td><strong>${x(b.nick)}</strong>${b.rejected?'<span class="xmark">✕</span>':''}</td>
       <td class="mono" style="font-size:10px;">${x(b.email)||'-'}</td>
-      <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl">링크↗</a>`:'-'}</td>
+      <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl" onclick="event.stopPropagation()">링크↗</a>`:'-'}</td>
       <td>${idxBadge(b.idx)}</td>
       <td style="font-size:11px;">${x(b.rk)||'-'}</td>
       <td style="font-size:11px;">${x(b.kw)||'-'}</td>
       <td style="font-size:11px;">${x(b.kws)||'-'}</td>
       <td style="font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${lm?x(lm.t):'-'}</td>
-      <td><div class="fl" style="gap:3px;">
-        <button class="btn btn-s btn-xs" onclick="nbEdit('${pid}','${b.id}')">수정</button>
-        <button class="btn btn-d btn-xs" onclick="nbDel('${b.id}')">삭제</button>
-      </div></td>
+      <td onclick="event.stopPropagation()"><button class="btn btn-d btn-xs" onclick="nbDel('${b.id}')">삭제</button></td>
     </tr>`;
   }).join('');
   renderPager(mk(pid,'nb_pager'),page,list.length,`(p)=>{getNBS('${pid}').page=p;renderNB('${pid}');}`);
@@ -937,7 +970,11 @@ function renderEB(pid){
       <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl" onclick="event.stopPropagation()">링크↗</a>`:'-'}</td>
       <td>${idxBadge(b.idx)}</td><td style="font-size:11px;">${x(b.rk)||'-'}</td>
       <td style="font-size:11px;">${x(b.lv)||'-'}</td><td style="font-size:11px;">${x(b.rank)||'-'}</td>
-      <td style="font-size:11px;${expCls}">${x(b.sc)||'-'}</td>
+      <td style="font-size:11px;">${x(b.sc)||'-'}</td>
+      <td style="font-size:10px;color:var(--m);white-space:nowrap;">${x(b.accountNum)||'-'}</td>
+      <td style="font-size:11px;white-space:nowrap;">${x(b.exclRegion)||'-'}</td>
+      <td style="font-size:10px;color:var(--m);white-space:nowrap;">${x(b.collectedDate)||'-'}</td>
+      <td style="font-size:10px;white-space:nowrap;${expCls}">${x(b.expiryDate)||'-'}</td>
     </tr>`;
   }).join('');
   renderPager(mk(pid,'eb_pager'),page,list.length,`(p)=>{getEBS('${pid}').page=p;renderEB('${pid}');}`);
@@ -1426,14 +1463,27 @@ function exportExcel(pid){
 
 // ════ 캘린더 ════
 const calState={};
+const BIZ_COLORS=['#03c75a','#1565c0','#e53935','#f57f17','#7b1fa2','#00695c','#c2185b','#0288d1','#558b2f','#6d4c41'];
+function getBizColor(bizId){const idx=BIZ.findIndex(b=>b.id===bizId);return BIZ_COLORS[idx%BIZ_COLORS.length]||'#888';}
+const calBizFilter={};
 function initCalS(pid){if(!calState[pid]){const n=new Date();calState[pid]={year:n.getFullYear(),month:n.getMonth()};}}
 function calNav(pid,dir){initCalS(pid);const s=calState[pid];s.month+=dir;if(s.month<0){s.month=11;s.year--;}if(s.month>11){s.month=0;s.year++;}renderCal(pid);}
 function calNow(pid){const n=new Date();calState[pid]={year:n.getFullYear(),month:n.getMonth()};renderCal(pid);}
 const DN=['일','월','화','수','목','금','토'];
+function setCalBizFilter(pid,bizId){calBizFilter[pid]=bizId;renderCal(pid);}
+function renderCalBizList(pid){
+  const el=pE(pid,'cal_biz_list')||E(mk(pid,'cal_biz_list'));if(!el)return;
+  const cur=calBizFilter[pid]||'all';
+  el.innerHTML=`<button onclick="setCalBizFilter('${pid}','all')" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${cur==='all'?'var(--a)':'var(--bd)'};background:${cur==='all'?'rgba(3,199,90,.08)':'#fff'};color:${cur==='all'?'var(--a)':'var(--t)'};font-size:11px;font-weight:${cur==='all'?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;">전체</button>`
+  +BIZ.map(b=>{const color=getBizColor(b.id);const sel=cur===b.id;
+    return`<button onclick="setCalBizFilter('${pid}','${b.id}')" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${sel?color:'var(--bd)'};background:${sel?color+'18':'#fff'};color:${sel?color:'var(--t)'};font-size:11px;font-weight:${sel?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle;"></span>${x(b.name)}</button>`;
+  }).join('');
+}
 function renderCal(pid){
   initCalS(pid);const s=calState[pid];
   const tEl=pE(pid,'cal_title')||E(mk(pid,'cal_title'));if(!tEl)return;
   tEl.textContent=`${s.year}년 ${s.month+1}월`;
+  renderCalBizList(pid);
   const dn=pE(pid,'cal_daynames')||E(mk(pid,'cal_daynames'));
   if(dn)dn.innerHTML=DN.map((d,i)=>`<div class="cal-day-name" style="color:${i===0?'#e53935':i===6?'#1565c0':'var(--m)'}">${d}</div>`).join('');
   const first=new Date(s.year,s.month,1).getDay();const daysInM=new Date(s.year,s.month+1,0).getDate();const prevD=new Date(s.year,s.month,0).getDate();
@@ -1441,18 +1491,26 @@ function renderCal(pid){
   for(let i=first-1;i>=0;i--)cells.push({date:null,day:prevD-i,other:true});
   for(let d=1;d<=daysInM;d++){const ds=`${s.year}-${String(s.month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const dow=new Date(s.year,s.month,d).getDay();cells.push({date:ds,day:d,other:false,dow});}
   while(cells.length%7!==0)cells.push({date:null,day:0,other:true});
-  const visitMap={};BIZB.forEach(e=>{if(e.visitDate){if(!visitMap[e.visitDate])visitMap[e.visitDate]=[];visitMap[e.visitDate].push(e.nick);}});
+  const filterBizId=calBizFilter[pid]||'all';
+  const visitMap={};
+  BIZB.filter(e=>filterBizId==='all'||e.bizId===filterBizId).forEach(e=>{if(e.visitDate){if(!visitMap[e.visitDate])visitMap[e.visitDate]=[];visitMap[e.visitDate].push({nick:e.nick,bizId:e.bizId});}});
   const grid=pE(pid,'cal_grid')||E(mk(pid,'cal_grid'));if(!grid)return;
   grid.innerHTML=cells.map(c=>{
     if(!c.date)return`<div class="cal-day other-month"><div class="cal-day-num" style="color:var(--m);">${c.day||''}</div></div>`;
-    const isT=c.date===today;const visits=visitMap[c.date]||[];const customs=CALEVENTS.filter(e=>e.date===c.date);
-    const contracts=c.day===1?BIZ.filter(b=>b.contractStart).map(b=>{const mo=monthsDiff(b.contractStart);return`📋${b.name}(${mo}m)`;}):[]; 
+    const isT=c.date===today;
+    const visits=visitMap[c.date]||[];
+    const customs=CALEVENTS.filter(e=>e.date===c.date);
+    const reports=BIZ.filter(b=>{
+      if(!b.contractStart)return false;
+      if(filterBizId!=='all'&&b.id!==filterBizId)return false;
+      return parseInt(b.contractStart.split('-')[2])===c.day;
+    });
     const numColor=c.dow===0?'#e53935':c.dow===6?'#1565c0':isT?'var(--a)':'var(--t)';
     const numStyle=isT?`display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--a);color:#fff;border-radius:50%;font-size:11px;`:`color:${numColor};`;
     return`<div class="cal-day${isT?' today':''}" onclick="calOpenEvent('${pid}','${c.date}')">
       <div class="cal-day-num"><span style="${numStyle}">${c.day}</span></div>
-      ${contracts.map(t=>`<div class="cal-event contract" title="${t}">${t}</div>`).join('')}
-      ${visits.map(n=>`<div class="cal-event visit">👤${n}</div>`).join('')}
+      ${reports.map(b=>`<div class="cal-event" style="background:${getBizColor(b.id)};color:#fff;">${x(b.name)}-성과보고</div>`).join('')}
+      ${visits.map(v=>`<div class="cal-event" style="background:${getBizColor(v.bizId)};color:#fff;opacity:.85;">👤${v.nick}</div>`).join('')}
       ${customs.map(e=>`<div class="cal-event custom">✦ ${e.text}</div>`).join('')}
     </div>`;
   }).join('');
@@ -1541,6 +1599,79 @@ function editBiz(pid,id){
   const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
+  // 키워드 섹션 표시
+  const kws=pE(pid,'b_kwsection')||E(mk(pid,'b_kwsection'));if(kws)kws.style.display='block';
+  renderKwInline(pid,id);
+  // 폼으로 스크롤
+  const panel=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(panel)panel.style.display='none';
+  const ft2=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft2)ft2.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function renderKwInline(pid,bizId){
+  const list=KWDS.filter(k=>k.bizId===bizId);
+  const el=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(!el)return;
+  if(!list.length){el.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">키워드 없음</div>';return;}
+  el.innerHTML=list.map(k=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:#fff;border:1px solid var(--bd);border-radius:8px;margin-bottom:4px;">
+    <div>
+      <span style="font-weight:600;font-size:12px;">${x(k.name)}</span>
+      <span style="color:var(--m);font-size:11px;margin-left:6px;">사이즈: ${x(k.size)||'-'}</span>
+      ${(k.smartEntries||[]).length?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${k.smartEntries.map(e=>`<span style="background:var(--sf2);border-radius:4px;padding:1px 5px;margin-right:3px;">${e.title||''}  LV${e.lv}/순위${e.rk}</span>`).join('')}</div>`:''}
+    </div>
+    <div style="display:flex;gap:4px;">
+      <button class="btn btn-s btn-xs" onclick="editKwInline('${pid}','${k.id}')">수정</button>
+      <button class="btn btn-d btn-xs" onclick="delKwInline('${k.id}','${pid}')">삭제</button>
+    </div>
+  </div>`).join('');
+}
+const sbState={};
+function openKwAddInline(pid){
+  const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;if(!bizId){alert('업체를 먼저 수정 모드로 열어주세요.');return;}
+  ['b_kwid','b_kwname','b_kwsize'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.value='';});
+  sbState[pid]=[];renderSbList(pid);
+  const ft=pE(pid,'b_kwformtitle')||E(mk(pid,'b_kwformtitle'));if(ft)ft.textContent='키워드 추가';
+  const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf){kf.style.display='block';kf.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+function editKwInline(pid,id){
+  const k=KWDS.find(k=>k.id===id);if(!k)return;
+  const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
+  sv('b_kwid',k.id);sv('b_kwname',k.name);sv('b_kwsize',k.size||'');
+  sbState[pid]=[...(k.smartEntries||[])];renderSbList(pid);
+  const ft=pE(pid,'b_kwformtitle')||E(mk(pid,'b_kwformtitle'));if(ft)ft.textContent='키워드 수정';
+  const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf){kf.style.display='block';kf.scrollIntoView({behavior:'smooth',block:'nearest'});}
+}
+function addSmartBlock(pid){
+  if(!sbState[pid])sbState[pid]=[];
+  sbState[pid].push({title:'',lv:'',rk:''});
+  renderSbList(pid);
+}
+function renderSbList(pid){
+  const el=pE(pid,'b_sblist')||E(mk(pid,'b_sblist'));if(!el)return;
+  const sbs=sbState[pid]||[];
+  if(!sbs.length){el.innerHTML='<div style="color:var(--m);font-size:11px;">스마트블록 없음</div>';return;}
+  el.innerHTML=sbs.map((sb,i)=>`<div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
+    <input placeholder="스마트블록 제목" style="flex:2;" value="${x(sb.title)}" oninput="sbState['${pid}'][${i}].title=this.value">
+    <input placeholder="LV" style="width:50px;" value="${x(sb.lv)}" oninput="sbState['${pid}'][${i}].lv=this.value">
+    <input placeholder="순위" style="width:50px;" value="${x(sb.rk)}" oninput="sbState['${pid}'][${i}].rk=this.value">
+    <button class="btn btn-d btn-xs" onclick="sbState['${pid}'].splice(${i},1);renderSbList('${pid}')">✕</button>
+  </div>`).join('');
+}
+async function saveKwInline(pid){
+  const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;if(!bizId)return;
+  const name=(pE(pid,'b_kwname')||E(mk(pid,'b_kwname'))||{value:''}).value.trim();if(!name){alert('키워드를 입력하세요.');return;}
+  const size=(pE(pid,'b_kwsize')||E(mk(pid,'b_kwsize'))||{value:''}).value.trim();
+  const entries=(sbState[pid]||[]).filter(s=>s.title||s.lv);
+  let smartSummary='';
+  if(entries.length){const lvs=entries.map(e=>parseFloat(e.lv)||0).filter(Boolean);const rks=entries.map(e=>parseFloat(e.rk)||0);if(lvs.length){const minLv=Math.min(...lvs),maxLv=Math.max(...lvs);const maxRk=Math.max(...rks);smartSummary=`${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`}/순위${maxRk}위`;}}
+  const editId=(pE(pid,'b_kwid')||E(mk(pid,'b_kwid'))||{value:''}).value;
+  await fsSet('keywords',editId||uid(),{bizId,name,size,smartEntries:entries,smartSummary,addedDate:ISO()});
+  const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf)kf.style.display='none';
+  renderKwInline(pid,bizId);
+  toast('✓ 키워드 저장됨','var(--a2)');
+}
+async function delKwInline(id,pid){
+  if(!confirm('키워드를 삭제할까요?'))return;
+  await fsDel('keywords',id);
+  const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
+  renderKwInline(pid,bizId);toast('삭제됨','var(--dn)');
 }
 async function delBiz(pid,id){
   if(!confirm('업체 삭제? 해당 업체 블로거·키워드 데이터도 삭제됩니다.'))return;
@@ -1553,6 +1684,8 @@ function cancelBizEdit(pid){
   ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
+  const kws=pE(pid,'b_kwsection')||E(mk(pid,'b_kwsection'));if(kws)kws.style.display='none';
+  const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf)kf.style.display='none';
 }
 
 // ════ 키워드 관리 ════
