@@ -398,7 +398,7 @@ function nbHTML(pid){const p=pid+'_';return`
     <div style="width:180px;flex-shrink:0;">
       <label class="lbl">메모</label>
       <div style="display:flex;flex-direction:column;gap:4px;">
-        <textarea id="${p}nb_mnew" placeholder="메모 내용 입력 후 추가" rows="3" style="width:100%;resize:none;" onkeydown="if(event.key==='Enter'&&event.shiftKey===false){event.preventDefault();nbAddMemo('${pid}');}"></textarea>
+        <textarea id="${p}nb_mnew" placeholder="메모 내용 입력 후 추가" rows="4" style="width:200%;resize:none;" onkeydown="if(event.key==='Enter'&&event.shiftKey===false){event.preventDefault();nbAddMemo('${pid}');}"></textarea>
         <button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')" style="align-self:flex-end;">추가</button>
       </div>
       <div id="${p}nb_mlist" class="memo-list" style="max-height:80px;overflow-y:auto;margin-top:4px;"></div>
