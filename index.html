@@ -690,10 +690,10 @@ function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="
 <div class="qpanel" id="${mk(pid,'cal_evpanel')}" style="display:none;margin-top:12px;">
   <div class="qtitle" id="${mk(pid,'cal_evtitle')}">일정 추가</div>
   <input type="hidden" id="${mk(pid,'cal_evid')}">
-  <div class="g3" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">날짜</label><input type="date" id="${mk(pid,'cal_evdate')}"></div>
-    <div class="fg"><label class="lbl">업체 (선택)</label><select id="${mk(pid,'cal_ev_biz')}"><option value="">업체 없음 (보라색)</option></select></div>
-    <div class="fg"><label class="lbl">일정 내용</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용"></div>
+  <div style="display:flex;gap:8px;margin-bottom:7px;align-items:flex-end;">
+    <div class="fg" style="flex:0 0 150px;"><label class="lbl">날짜</label><input type="date" id="${mk(pid,'cal_evdate')}" style="width:150px;"></div>
+    <div class="fg" style="flex:0 0 150px;"><label class="lbl">업체 (선택)</label><select id="${mk(pid,'cal_ev_biz')}" style="width:150px;"><option value="">업체 없음 (보라색)</option></select></div>
+    <div class="fg" style="flex:0 0 300px;"><label class="lbl">일정 내용</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용" style="width:300px;"></div>
   </div>
   <div style="display:flex;justify-content:flex-end;gap:6px;">
     <button class="btn btn-s btn-sm" onclick="E('${mk(pid,'cal_evpanel')}').style.display='none'">취소</button>
@@ -728,7 +728,7 @@ function bizmHTML(pid){const p=pid+'_';return`
         <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
       </div>
     </div>
-    <div id="${p}b_kwsection" style="flex:1;min-width:200px;display:none;border-left:1px solid var(--bd);padding-left:16px;">
+    <div id="${p}b_kwsection" style="flex:1;min-width:200px;display:none;border-left:2px solid var(--a);padding-left:16px;">
       <div class="abar" style="margin-bottom:6px;">
         <div class="ctitle" style="margin:0;">🔑 키워드 목록</div>
         <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 키워드 추가</button>
@@ -1425,6 +1425,7 @@ function renderProgress(pid){
   const container=pE(pid,'prog_container')||E(mk(pid,'prog_container'));if(!container)return;
   const sortKey=(pE(pid,'prog_sort')||E(mk(pid,'prog_sort'))||{value:'nick'}).value;
   const sortDir=(pE(pid,'prog_dir')||E(mk(pid,'prog_dir'))||{value:'asc'}).value;
+  const nickQ=((pE(pid,'prog_nick')||E(mk(pid,'prog_nick'))||{value:''}).value||'').toLowerCase().trim();
   if(!BIZ.length){container.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">업체를 등록하세요.</div></div>';return;}
   const today=ISO();
   container.innerHTML=BIZ.map(biz=>{
@@ -1549,7 +1550,7 @@ function renderCal(pid){
       <div class="cal-day-num"><span style="${numStyle}">${c.day}</span></div>
       ${reports.map(b=>`<div class="cal-event" style="background:${getBizColor(b.id)};color:#fff;">${x(b.name)}-성과보고</div>`).join('')}
       ${visits.map(v=>`<div class="cal-event" style="background:${getBizColor(v.bizId)};color:#fff;opacity:.85;">👤${v.nick}</div>`).join('')}
-      ${customs.map(e=>{const evCol=e.bizId?getBizColor(e.bizId):'var(--end)';return`<div class="cal-event" style="background:${evCol};color:#fff;">✦ ${e.text}</div>`;}).join('')}
+      ${customs.map(e=>{const evCol=e.bizId?getBizColor(e.bizId):'var(--end)';const bizName=e.bizId?(BIZ.find(b=>b.id===e.bizId)||{}).name||'':'';const label=bizName?`${bizName} ${e.text}`:e.text;return`<div class="cal-event" style="background:${evCol};color:#fff;cursor:pointer;" onclick="event.stopPropagation();calEditEvent('${pid}','${e.id}')">✦ ${label}</div>`;}).join('')}
     </div>`;
   }).join('');
 }
@@ -1561,8 +1562,20 @@ function calOpenEvent(pid,dateStr){
   const db2=pE(pid,'cal_delbtn')||E(mk(pid,'cal_delbtn'));if(db2)db2.style.display='none';
   const t=pE(pid,'cal_evtitle')||E(mk(pid,'cal_evtitle'));if(t)t.textContent=`일정 추가 - ${dateStr}`;
   const bs=pE(pid,'cal_ev_biz')||E(mk(pid,'cal_ev_biz'));
-  if(bs)bs.innerHTML='<option value="">업체 없음 (보라색)</option>'+BIZ.map(b=>`<option value="${b.id}">● ${b.name}</option>`).join('');
-  ep.style.display='block';
+  if(bs){bs.innerHTML='<option value="">업체 없음 (보라색)</option>'+BIZ.map(b=>`<option value="${b.id}">● ${b.name}</option>`).join('');bs.value='';}
+  ep.style.display='block';ep.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function calEditEvent(pid,id){
+  const ev=CALEVENTS.find(e=>e.id===id);if(!ev)return;
+  const ep=pE(pid,'cal_evpanel')||E(mk(pid,'cal_evpanel'));if(!ep)return;
+  const evdate=pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'));if(evdate)evdate.value=ev.date;
+  const evtext=pE(pid,'cal_evtext')||E(mk(pid,'cal_evtext'));if(evtext)evtext.value=ev.text;
+  const evid=pE(pid,'cal_evid')||E(mk(pid,'cal_evid'));if(evid)evid.value=id;
+  const db2=pE(pid,'cal_delbtn')||E(mk(pid,'cal_delbtn'));if(db2)db2.style.display='inline-block';
+  const t=pE(pid,'cal_evtitle')||E(mk(pid,'cal_evtitle'));if(t)t.textContent='✏️ 일정 수정';
+  const bs=pE(pid,'cal_ev_biz')||E(mk(pid,'cal_ev_biz'));
+  if(bs){bs.innerHTML='<option value="">업체 없음 (보라색)</option>'+BIZ.map(b=>`<option value="${b.id}">● ${b.name}</option>`).join('');bs.value=ev.bizId||'';}
+  ep.style.display='block';ep.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 async function saveCalEvent(pid){
   const date=(pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'))||{value:''}).value;
