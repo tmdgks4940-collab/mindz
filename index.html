@@ -11,6 +11,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#f8f9fa;--sf:#ffffff;--sf2:#f1f3f5;--bd:#e0e4e8;--a:#03c75a;--a2:#00b96b;--a3:#f7c948;--t:#1a1a1a;--m:#888ea8;--dn:#e53935;--end:#7c4dff;--pay:#00b96b;}
+body.dark{--bg:#0f0f12;--sf:#17171d;--sf2:#1e1e27;--bd:#2a2a38;--t:#e8e8f0;--m:#7a7a9a;}
+body.dark header{background:var(--sf);}
+body.dark .chrome-tabbar{background:var(--sf);}
+body.dark .panel-nav{background:var(--sf);}
+body.dark input,body.dark textarea,body.dark select{background:var(--sf2);color:var(--t);}
+body.dark .card,body.dark .qpanel{background:var(--sf);border-color:var(--bd);}
+body.dark table td,body.dark table th{color:var(--t);}
+body.dark td{color:var(--t);}
+body.dark .btn-s{background:var(--sf2);color:var(--t);}
+body.dark .login-box{background:var(--sf);}
+body.dark .login-box input{background:var(--sf2);color:var(--t);}
+body.dark .toast{background:var(--sf);}
+body.dark .cal-day{background:var(--sf2);}
+body.dark .check-bl-list,.check-bl-item{background:var(--sf);}
+body.dark .memo-item{background:var(--sf2);}
+body.dark .kw-item{background:var(--sf2);}
+body.dark .prog-biz-hdr{background:var(--sf);}
+body.dark .prog-st-bar{background:var(--sf2);}
+body.dark .fbtn{background:var(--sf2);color:var(--m);}
+body.dark .pager-btn{background:var(--sf2);}
+body.dark .sri{border-color:var(--bd);}
+body.dark .infobox{background:var(--sf2);}
+*{transition:background-color .2s,border-color .2s,color .15s;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
 header{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-bottom:1px solid var(--bd);background:#fff;flex-shrink:0;z-index:200;box-shadow:0 1px 4px rgba(0,0,0,.06);}
@@ -163,7 +186,9 @@ a.bl{color:var(--a);text-decoration:none;font-size:11px;}a.bl:hover{text-decorat
 <div id="toast" class="toast"></div>
 <header>
   <div class="logo">마인즈<span>마케팅</span><small>블로그 체험단 관리</small></div>
-  <div class="fl"><span id="sync-dot" style="font-size:10px;color:var(--m);">●</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m);">v9.1</span><span id="login-user" style="font-size:11px;color:var(--m);margin-left:10px;"></span><button onclick="doLogout()" style="margin-left:8px;font-size:11px;background:none;border:1px solid var(--bd);color:var(--m);border-radius:5px;padding:3px 8px;cursor:pointer;">로그아웃</button></div>
+  <div class="fl"><span id="sync-dot" style="font-size:10px;color:var(--m);">●</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--m);">v9.1</span><span id="login-user" style="font-size:11px;color:var(--m);margin-left:10px;"></span>
+  <button id="darkmode-btn" onclick="toggleDark()" style="margin-left:8px;font-size:14px;background:none;border:1px solid var(--bd);border-radius:20px;padding:3px 10px;cursor:pointer;color:var(--m);">🌙</button>
+  <button onclick="doLogout()" style="margin-left:6px;font-size:11px;background:none;border:1px solid var(--bd);color:var(--m);border-radius:5px;padding:3px 8px;cursor:pointer;">로그아웃</button></div>
 </header>
 <div class="chrome-tabbar" id="ctbar"></div>
 <div class="app-body" id="appbody"></div>
@@ -272,6 +297,13 @@ function onPageInit(pid,pageKey){
 let _tm;
 function toast(msg,col){clearTimeout(_tm);const t=E('toast');t.textContent=msg;t.style.borderLeft='3px solid '+(col||'var(--a2)');t.classList.add('on');_tm=setTimeout(()=>t.classList.remove('on'),3200);}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function toggleDark(){
+  const isDark=document.body.classList.toggle('dark');
+  localStorage.setItem('mm_dark',isDark?'1':'');
+  document.getElementById('darkmode-btn').textContent=isDark?'☀️':'🌙';
+}
+// 다크모드 초기화
+if(localStorage.getItem('mm_dark')){document.body.classList.add('dark');document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('darkmode-btn');if(b)b.textContent='☀️';});}
 function E(id){return document.getElementById(id);}
 function ss(v){return v==null?'':String(v);}
 function x(s){return ss(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
