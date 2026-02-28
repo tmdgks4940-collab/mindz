@@ -343,7 +343,7 @@ function nbHTML(pid){const p=pid+'_';return`
 <div class="qpanel">
   <div class="qtitle" id="${p}nb_ftitle">⚡ 블로거 추가</div>
   <input type="hidden" id="${p}nb_id">
-  <div style="display:flex;gap:12px;">
+  <div style="display:flex;gap:12px;max-width:700px;">
     <div style="flex:1;min-width:0;">
       <div style="display:flex;gap:6px;margin-bottom:7px;width:386px;">
         <div class="fg"><label class="lbl">닉네임 *</label><input id="${p}nb_nick" placeholder="닉네임" style="width:140px;" maxlength="20"></div>
@@ -786,13 +786,8 @@ function setHTML(pid){const p=pid+'_';return`
 <div class="card"><div class="ctitle">Firebase 상태</div><div id="${p}fb_status" class="notice n-i" style="font-size:12px;">확인 중...</div></div>
 <div class="card">
   <div class="ctitle">네이버웍스 메일 API</div>
-  <div class="infobox">네이버웍스 OAuth 2.0 Access Token을 입력하세요.</div>
-  <div class="g2" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">Client ID</label><input id="${p}nw_cid" placeholder="Client ID"></div>
-    <div class="fg"><label class="lbl">Client Secret</label><input id="${p}nw_cs" type="password"></div>
-  </div>
+  <div class="infobox">발신자 계정(userId)만 입력하면 됩니다. 토큰은 자동 관리됩니다.</div>
   <div class="fg" style="margin-bottom:7px;"><label class="lbl">발신자 계정 (userId)</label><input id="${p}nw_uid" placeholder="user@company.com"></div>
-  <div class="fg" style="margin-bottom:7px;"><label class="lbl">Access Token</label><input id="${p}nw_token" placeholder="Bearer Token"></div>
   <div class="fl"><button class="btn btn-s btn-sm" onclick="saveNWSettings('${pid}')">저장</button><button class="btn btn-s btn-sm" onclick="testNWMail('${pid}')">테스트</button></div>
   <div id="${p}nw_status" style="font-size:11px;margin-top:6px;color:var(--m);"></div>
 </div>
@@ -1337,7 +1332,7 @@ async function sendMailBulk(pid){
   const selected=[...document.querySelectorAll(`input[name="${mk(pid,'mail_b')}"]:checked`)].map(i=>i.value);
   if(!selected.length){alert('받는 사람을 선택해주세요.');return;}
   const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
-  if(!settings.accessToken||!settings.userId){alert('설정 탭에서 네이버웍스 API 정보를 먼저 입력해주세요.');return;}
+  if(!settings.userId){alert('설정 탭에서 발신자 계정을 먼저 입력해주세요.');return;}
   const subject=getGV(pid,'mail_subject')||MAIL_SIT[getMailS(pid).sit].title;
   const baseBody=(pE(pid,'mailTA')||E(mk(pid,'mailTA'))||{value:''}).value;
   let sent=0,failed=0;
@@ -1360,10 +1355,10 @@ async function sendMailBulk(pid){
 }
 
 async function sendNWMail(settings,to,subject,body){
-  const proxyUrl=`https://mindz-mail-proxy.tmdgks4940.workers.dev/?target=mail&userId=${encodeURIComponent(settings.userId)}`;
-  const res=await fetch(proxyUrl,{
-    method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${settings.accessToken}`},
-    body:JSON.stringify({to,subject,body,contentType:"text",isSaveSentMail:true,isSendSeparately:false})
+  const res=await fetch('https://mindz-mail-proxy.tmdgks4940.workers.dev/send-mail',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({userId:settings.userId,mail:{to,subject,body,contentType:'text',isSaveSentMail:true,isSendSeparately:false}})
   });
   if(!res.ok)throw new Error(await res.text());
 }
@@ -1782,17 +1777,17 @@ function renderSettings(pid){
   if(el)el.className=db?'notice n-ok':'notice n-w';
   const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-  sv('nw_cid',settings.clientId);sv('nw_cs',settings.clientSecret);sv('nw_uid',settings.userId);sv('nw_token',settings.accessToken);
+  sv('nw_uid',settings.userId);
   const kt=pE(pid,'kakao_token')||E(mk(pid,'kakao_token'));if(kt)kt.value=localStorage.getItem('mm_kakao')||'';
 }
 function saveNWSettings(pid){
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value;
-  const settings={clientId:gv('nw_cid'),clientSecret:gv('nw_cs'),userId:gv('nw_uid'),accessToken:gv('nw_token')};
+  const settings={userId:gv('nw_uid')};
   localStorage.setItem('mm_nw',JSON.stringify(settings));toast('✓ 네이버웍스 설정 저장됨','var(--a2)');
 }
 async function testNWMail(pid){
   const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
-  if(!settings.accessToken||!settings.userId){alert('설정을 먼저 저장해주세요.');return;}
+  if(!settings.userId){alert('발신자 계정을 먼저 저장해주세요.');return;}
   const testTo=prompt('테스트 메일 주소:');if(!testTo)return;
   try{await sendNWMail(settings,testTo,'[테스트] 마인즈마케팅','네이버웍스 메일 테스트입니다.');toast('✓ 테스트 메일 발송됨','var(--a2)');}
   catch(e){toast('발송 실패: '+e.message,'var(--dn)');}
