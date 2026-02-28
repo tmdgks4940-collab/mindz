@@ -398,8 +398,8 @@ function nbHTML(pid){const p=pid+'_';return`
     <div style="width:180px;flex-shrink:0;">
       <label class="lbl">메모</label>
       <div style="display:flex;flex-direction:column;gap:4px;">
-        <textarea id="${p}nb_mnew" placeholder="메모 내용 입력 후 추가" rows="4" style="width:200%;resize:none;" onkeydown="if(event.key==='Enter'&&event.shiftKey===false){event.preventDefault();nbAddMemo('${pid}');}"></textarea>
-        <button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')" style="align-self:flex-end;">추가</button>
+        <textarea id="${p}nb_mnew" placeholder="메모 내용 입력 후 추가" rows="3" style="width:100%;resize:none;" onkeydown="if(event.key==='Enter'&&event.shiftKey===false){event.preventDefault();nbAddMemo('${pid}');}"></textarea>
+        <div style="display:flex;justify-content:flex-end;"><button class="btn btn-s btn-sm" onclick="nbAddMemo('${pid}')">추가</button></div>
       </div>
       <div id="${p}nb_mlist" class="memo-list" style="max-height:80px;overflow-y:auto;margin-top:4px;"></div>
     </div>
@@ -408,7 +408,7 @@ function nbHTML(pid){const p=pid+'_';return`
 <div class="card">
   <div class="abar">
     <div><div class="ctitle">신규 블로거 목록</div><span id="${p}nb_count" class="mono">0명</span></div>
-    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:200px;font-size:11px;" oninput="renderNB('${pid}')"></div>
+    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:130px;font-size:11px;" oninput="renderNB('${pid}')"></div>
   </div>
   <div style="overflow-x:auto;"><table>
     <thead><tr><th onclick="sortNB('${pid}','nick')">닉네임</th><th>이메일</th><th>블로그</th><th onclick="sortNB('${pid}','idx')">IDX</th><th onclick="sortNB('${pid}','rk')">RK</th><th>검색어</th><th>사이즈</th><th>메모</th><th>삭제</th></tr></thead>
@@ -422,7 +422,7 @@ function ebHTML(pid){const p=pid+'_';return`
 <div class="card">
   <div class="abar">
     <div><div class="ctitle">기존 블로거 목록</div><span id="${p}eb_count" class="mono">0명</span></div>
-    <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">기존블로거 정리 파일</button></div>
+    <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">CSV</button></div>
   </div>
   <div style="overflow-x:auto;"><table>
     <thead><tr><th onclick="sortEB('${pid}','nick')" style="white-space:nowrap;">닉네임</th><th style="white-space:nowrap;">이름</th><th style="white-space:nowrap;">이메일</th><th style="white-space:nowrap;">블로그</th><th onclick="sortEB('${pid}','idx')" style="white-space:nowrap;">IDX</th><th onclick="sortEB('${pid}','rk')" style="white-space:nowrap;">RK</th><th onclick="sortEB('${pid}','lv')" style="white-space:nowrap;">LV</th><th onclick="sortEB('${pid}','rank')" style="white-space:nowrap;">순위</th><th onclick="sortEB('${pid}','sc')" style="white-space:nowrap;">SC</th><th style="white-space:nowrap;">계좌</th><th style="white-space:nowrap;">제외지역</th><th style="white-space:nowrap;">수집일</th><th style="white-space:nowrap;">파기일</th></tr></thead>
@@ -607,6 +607,7 @@ function mailHTML(pid){const p=pid+'_';return`
         </div>
         <div class="fg" style="margin-bottom:6px;"><label class="lbl">플레이스 URL</label><input id="${p}mv_addr" oninput="genMail('${pid}')"></div>
         <div class="fg" style="margin-bottom:6px;"><label class="lbl">방문 가능 일자</label><input id="${p}mv_visit" oninput="genMail('${pid}')"></div>
+        <div class="fg" style="margin-bottom:6px;"><label class="lbl">공통사항 ①</label><input id="${p}mv_r1" oninput="genMail('${pid}')"></div>
         <div class="fg" style="margin-bottom:6px;"><label class="lbl">공통사항 ②</label><input id="${p}mv_r2" oninput="genMail('${pid}')"></div>
         <div class="fg"><label class="lbl">공통사항 ③</label><input id="${p}mv_r3" oninput="genMail('${pid}')"></div>
       </div>
@@ -653,16 +654,25 @@ function mailHTML(pid){const p=pid+'_';return`
 function progHTML(pid){return`<div class="stitle">체험단 진행 현황</div><div class="ssub">업체별 블로거 현황. 상태 클릭 시 해당 상태만 표시.</div><div class="fl" style="margin-bottom:10px;gap:6px;"><input id="${mk(pid,'prog_nick')}" placeholder="🔍 닉네임 검색" style="width:140px;font-size:11px;" oninput="renderProgress('${pid}')"><label class="lbl" style="display:inline;">정렬:</label><select id="${mk(pid,'prog_sort')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="nick">닉네임</option><option value="idx">IDX</option><option value="rk">RK</option><option value="visitDate">방문일</option></select><select id="${mk(pid,'prog_dir')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div><div id="${mk(pid,'prog_container')}"></div>`;}
 
 function excelHTML(pid){return`<div class="stitle">체험단 진행 엑셀파일</div><div class="ssub">업체·연도·월을 선택하면 해당 기간 방문한 블로거 정보를 엑셀로 내보냅니다.</div>
-<div class="card">
-  <div class="ctitle">내보내기 설정</div>
-  <div class="g3" style="margin-bottom:10px;">
-    <div class="fg"><label class="lbl">업체 선택 (복수)</label><div id="${mk(pid,'excel_bizlist')}" style="border:1px solid var(--bd);border-radius:7px;max-height:200px;overflow-y:auto;"></div></div>
-    <div class="fg"><label class="lbl">연도</label><select id="${mk(pid,'excel_year')}" style="margin-bottom:6px;" onchange="updateExcelPreview('${pid}')"></select>
-      <label class="lbl">월 (복수)</label><div id="${mk(pid,'excel_monthlist')}" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
-    </div>
-    <div class="fg"><label class="lbl">미리보기</label><div id="${mk(pid,'excel_preview')}" style="font-size:11px;color:var(--m);padding:8px;background:var(--sf2);border-radius:7px;min-height:80px;">업체와 기간을 선택하세요.</div></div>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+  <div class="card" style="min-width:200px;flex:1;">
+    <div class="ctitle">1️⃣ 업체 선택</div>
+    <div id="${mk(pid,'excel_bizlist')}" style="border:1px solid var(--bd);border-radius:8px;max-height:220px;overflow-y:auto;"></div>
   </div>
-  <div style="display:flex;justify-content:flex-end;"><button class="btn btn-g" onclick="exportExcel('${pid}')">📊 엑셀 파일 생성</button></div>
+  <div class="card" style="min-width:200px;flex:1;">
+    <div class="ctitle">2️⃣ 기간 선택</div>
+    <div class="fg" style="margin-bottom:10px;">
+      <label class="lbl">연도</label>
+      <select id="${mk(pid,'excel_year')}" onchange="updateExcelPreview('${pid}')" style="width:100px;font-size:12px;"></select>
+    </div>
+    <label class="lbl" style="margin-bottom:5px;display:block;">월 (복수 선택 가능)</label>
+    <div id="${mk(pid,'excel_monthlist')}" style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;"></div>
+  </div>
+  <div class="card" style="min-width:200px;flex:1;">
+    <div class="ctitle">3️⃣ 확인 및 내보내기</div>
+    <div id="${mk(pid,'excel_preview')}" style="min-height:80px;padding:12px;background:var(--sf2);border-radius:8px;font-size:12px;color:var(--m);margin-bottom:12px;line-height:1.8;">업체와 기간을 선택하세요.</div>
+    <button class="btn btn-g" style="width:100%;" onclick="exportExcel('${pid}')">📊 엑셀 파일 생성</button>
+  </div>
 </div>`;}
 
 function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="ssub">업체별 방문 일정 및 기타 일정 관리.</div>
@@ -680,9 +690,10 @@ function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="
 <div class="qpanel" id="${mk(pid,'cal_evpanel')}" style="display:none;margin-top:12px;">
   <div class="qtitle" id="${mk(pid,'cal_evtitle')}">일정 추가</div>
   <input type="hidden" id="${mk(pid,'cal_evid')}">
-  <div class="g2" style="margin-bottom:7px;">
+  <div class="g3" style="margin-bottom:7px;">
     <div class="fg"><label class="lbl">날짜</label><input type="date" id="${mk(pid,'cal_evdate')}"></div>
-    <div class="fg"><label class="lbl">제목</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용"></div>
+    <div class="fg"><label class="lbl">업체 (선택)</label><select id="${mk(pid,'cal_ev_biz')}"><option value="">업체 없음 (보라색)</option></select></div>
+    <div class="fg"><label class="lbl">일정 내용</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용"></div>
   </div>
   <div style="display:flex;justify-content:flex-end;gap:6px;">
     <button class="btn btn-s btn-sm" onclick="E('${mk(pid,'cal_evpanel')}').style.display='none'">취소</button>
@@ -695,52 +706,52 @@ function bizmHTML(pid){const p=pid+'_';return`
 <div class="stitle">업체 관리</div><div class="ssub">업체 정보를 등록합니다.</div>
 <div class="qpanel">
   <div class="qtitle" id="${p}bizm_ftitle">⚡ 업체 추가</div>
-  <div class="g2" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">업체명 *</label><input id="${p}b_name" placeholder="예: ○○레스토랑"></div>
-    <div class="fg"><label class="lbl">지역</label><input id="${p}b_reg" placeholder="예: 서울 강남구"></div>
-  </div>
-  <div class="g2" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">계약일</label><input type="date" id="${p}b_cs"></div>
-    <div class="fg"><label class="lbl">계약종료일</label><input type="date" id="${p}b_ce"></div>
-  </div>
-  <div class="g2" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..."></div>
-    <div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..."></div>
-  </div>
-  <div class="fg" style="margin-bottom:7px;"><label class="lbl">방문 가능 일자</label><input id="${p}b_visit" placeholder="평일 12시~21시"></div>
-  <div class="g2" style="margin-bottom:7px;">
-    <div class="fg"><label class="lbl">공통사항 ②</label><input id="${p}b_r2"></div>
-    <div class="fg"><label class="lbl">공통사항 ③</label><input id="${p}b_r3"></div>
-  </div>
-  <div style="display:flex;justify-content:flex-end;gap:6px;">
-    <input type="hidden" id="${p}b_editid">
-    <button class="btn btn-s btn-sm" onclick="cancelBizEdit('${pid}')">초기화</button>
-    <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
-  </div>
-  <!-- 키워드 인라인 관리 (업체 수정 시에만 표시) -->
-  <div id="${p}b_kwsection" style="display:none;margin-top:12px;border-top:1px solid var(--bd);padding-top:12px;">
-    <div class="abar" style="margin-bottom:6px;">
-      <div class="ctitle" style="margin:0;">🔑 키워드 목록</div>
-      <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 키워드 추가</button>
+  <div style="display:flex;gap:16px;align-items:flex-start;">
+    <div style="flex:0 0 auto;">
+      <div style="display:flex;gap:8px;margin-bottom:7px;">
+        <div class="fg"><label class="lbl">업체명 *</label><input id="${p}b_name" placeholder="예: ○○레스토랑" style="width:150px;"></div>
+        <div class="fg"><label class="lbl">지역</label><input id="${p}b_reg" placeholder="예: 서울 강남구" style="width:150px;"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:7px;">
+        <div class="fg"><label class="lbl">계약일</label><input type="date" id="${p}b_cs" style="width:150px;"></div>
+        <div class="fg"><label class="lbl">계약종료일</label><input type="date" id="${p}b_ce" style="width:150px;"></div>
+      </div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..." style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">방문 가능 일자</label><input id="${p}b_visit" placeholder="평일 12시~21시" style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ①</label><input id="${p}b_r1" placeholder="1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입" style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ②</label><input id="${p}b_r2" style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ③</label><input id="${p}b_r3" style="width:308px;"></div></div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;padding-top:4px;">
+        <input type="hidden" id="${p}b_editid">
+        <button class="btn btn-s btn-sm" onclick="cancelBizEdit('${pid}')">초기화</button>
+        <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
+      </div>
     </div>
-    <div id="${p}b_kwlist"></div>
-    <div id="${p}b_kwform" style="display:none;background:var(--sf2);border-radius:8px;padding:10px;margin-top:6px;">
-      <div class="ctitle" id="${p}b_kwformtitle" style="margin-bottom:7px;">키워드 추가</div>
-      <input type="hidden" id="${p}b_kwid">
-      <div style="display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;">
-        <div class="fg"><label class="lbl">키워드 *</label><input id="${p}b_kwname" placeholder="키워드" style="width:140px;"></div>
-        <div class="fg"><label class="lbl">키워드 사이즈</label><input id="${p}b_kwsize" style="width:90px;"></div>
+    <div id="${p}b_kwsection" style="flex:1;min-width:200px;display:none;border-left:1px solid var(--bd);padding-left:16px;">
+      <div class="abar" style="margin-bottom:6px;">
+        <div class="ctitle" style="margin:0;">🔑 키워드 목록</div>
+        <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 키워드 추가</button>
       </div>
-      <div style="margin-bottom:6px;">
-        <div class="abar" style="margin-bottom:4px;">
-          <label class="lbl" style="margin:0;">스마트블록</label>
-          <button class="btn btn-s btn-sm" onclick="addSmartBlock('${pid}')">+ 스마트블록 추가</button>
+      <div id="${p}b_kwlist"></div>
+      <div id="${p}b_kwform" style="display:none;background:var(--sf2);border-radius:8px;padding:10px;margin-top:6px;">
+        <div class="ctitle" id="${p}b_kwformtitle" style="margin-bottom:7px;">키워드 추가</div>
+        <input type="hidden" id="${p}b_kwid">
+        <div style="display:flex;gap:6px;margin-bottom:7px;flex-wrap:wrap;">
+          <div class="fg"><label class="lbl">키워드 *</label><input id="${p}b_kwname" placeholder="키워드" style="width:140px;"></div>
+          <div class="fg"><label class="lbl">키워드 사이즈</label><input id="${p}b_kwsize" style="width:90px;"></div>
         </div>
-        <div id="${p}b_sblist"></div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:6px;">
-        <button class="btn btn-s btn-sm" onclick="E('${pid}_b_kwform').style.display='none'">취소</button>
-        <button class="btn btn-g btn-sm" onclick="saveKwInline('${pid}')">저장</button>
+        <div style="margin-bottom:6px;">
+          <div class="abar" style="margin-bottom:4px;">
+            <label class="lbl" style="margin:0;">스마트블록</label>
+            <button class="btn btn-s btn-sm" onclick="addSmartBlock('${pid}')">+ 스마트블록 추가</button>
+          </div>
+          <div id="${p}b_sblist"></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:6px;">
+          <button class="btn btn-s btn-sm" onclick="E('${pid}_b_kwform').style.display='none'">취소</button>
+          <button class="btn btn-g btn-sm" onclick="saveKwInline('${pid}')">저장</button>
+        </div>
       </div>
     </div>
   </div>
@@ -755,7 +766,7 @@ function bizmHTML(pid){const p=pid+'_';return`
     </div>
   </div>
   <div style="overflow-x:auto;"><table>
-    <thead><tr><th>상태</th><th>업체명 (경과월)</th><th>지역</th><th>계약일</th><th>종료일</th><th>플레이스</th><th>구글폼</th><th>방문가능</th><th>공통②</th><th>공통③</th><th>수정/삭제</th></tr></thead>
+    <thead><tr><th>상태</th><th>업체명 (경과월)</th><th>지역</th><th>계약일</th><th>종료일</th><th>플레이스</th><th>구글폼</th><th>방문가능</th><th>공통①</th><th>공통②</th><th>공통③</th><th>수정/삭제</th></tr></thead>
     <tbody id="${p}biz_tbody"></tbody>
   </table></div>
 </div>`;}
@@ -1284,7 +1295,7 @@ function mailBizChange(pid){
   const biz=BIZ.find(b=>b.id===bizId);
   if(biz){
     const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-    sv('mv_reg',biz.reg);sv('mv_store',biz.name);sv('mv_addr',biz.url);sv('mv_visit',biz.visit);sv('mv_r2',biz.r2);sv('mv_r3',biz.r3);sv('mv_form',biz.form);
+    sv('mv_reg',biz.reg);sv('mv_store',biz.name);sv('mv_addr',biz.url);sv('mv_visit',biz.visit);sv('mv_r1',biz.r1);sv('mv_r2',biz.r2);sv('mv_r3',biz.r3);sv('mv_form',biz.form);
   }
   renderMailBloggerList(pid);genMail(pid);
 }
@@ -1321,11 +1332,10 @@ function tmplText(pid,nick){
     const reg=getGV(pid,'mv_reg')||'{지역}';const store=getGV(pid,'mv_store')||'{상호명}';
     const meal=getGV(pid,'mv_meal')?getGV(pid,'mv_meal')+'만원':'N만원';const fee=getGV(pid,'mv_fee')?getGV(pid,'mv_fee')+'만원':'N만원';
     const addr=getGV(pid,'mv_addr')||'{플레이스URL}';const visit=getGV(pid,'mv_visit')||'(방문가능일자)';
-    const r2=getGV(pid,'mv_r2');const r3=getGV(pid,'mv_r3');
-    const commonLines=['1️⃣ 1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입/ 인용구 활용'];
-    if(r2)commonLines.push(`2️⃣ ${r2}`);
-    if(r3)commonLines.push(`3️⃣ ${r3}`);
-    return `안녕하세요, ${NM}님!\n브랜드와 블로거의 협업을 돕는 마인즈마케팅 담당자입니다.\n현재 ${reg}에 위치한 <${store}> 체험단을 모집하고 있습니다.\n\n${greeting}\n\n[<${store}> 체험단 내용]\n\n✅ 제공 내역\n자유 식사권 ${meal} + 원고료 ${fee}\n\n✅ 키워드: 별도 안내\n\n✅ ${store} 플레이스\n${addr}\n\n✅ 방문 가능 일자\n${visit}\n\n✅ 작성기한\n방문 후 7일 이내\n\n✅ 체험단 공통 사항\n${commonLines.join('\n')}\n\n괜찮으시다면 진행 안내 도와드리겠습니다!\n추가 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.\n\n감사합니다.`;
+    const r1=getGV(pid,'mv_r1');const r2=getGV(pid,'mv_r2');const r3=getGV(pid,'mv_r3');
+    const commonLines=[(r1||'1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입/ 인용구 활용'),r2,r3].filter(Boolean);
+    const commonLinesFormatted=commonLines.map((t,i)=>`${['1️⃣','2️⃣','3️⃣'][i]||'▪'} ${t}`);
+    return `안녕하세요, ${NM}님!\n브랜드와 블로거의 협업을 돕는 마인즈마케팅 담당자입니다.\n현재 ${reg}에 위치한 <${store}> 체험단을 모집하고 있습니다.\n\n${greeting}\n\n[<${store}> 체험단 내용]\n\n✅ 제공 내역\n자유 식사권 ${meal} + 원고료 ${fee}\n\n✅ 키워드: 별도 안내\n\n✅ ${store} 플레이스\n${addr}\n\n✅ 방문 가능 일자\n${visit}\n\n✅ 작성기한\n방문 후 7일 이내\n\n✅ 체험단 공통 사항\n${commonLinesFormatted.join('\n')}\n\n괜찮으시다면 진행 안내 도와드리겠습니다!\n추가 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.\n\n감사합니다.`;
   }
   if(n===2){
     const qna=getGV(pid,'mv_qna');const form=getGV(pid,'mv_form')||'{구글폼링크}';
@@ -1458,7 +1468,7 @@ function initExcel(pid){
   const cur=new Date().getFullYear();
   sel.innerHTML=[cur-1,cur,cur+1].map(y=>`<option value="${y}"${y===cur?' selected':''}>${y}년</option>`).join('');
   const ml=pE(pid,'excel_monthlist')||E(mk(pid,'excel_monthlist'));
-  if(ml)ml.innerHTML=Array.from({length:12},(_,i)=>i+1).map(m=>`<label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;"><input type="checkbox" value="${m}" onchange="updateExcelPreview('${pid}')"> ${m}월</label>`).join('');
+  if(ml)ml.innerHTML=Array.from({length:12},(_,i)=>i+1).map(m=>`<label style="display:flex;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer;padding:5px 2px;background:var(--sf2);border:1px solid var(--bd);border-radius:7px;"><input type="checkbox" value="${m}" onchange="updateExcelPreview('${pid}')" style="accent-color:var(--a);width:12px;height:12px;"> ${m}월</label>`).join('');
   const bl=pE(pid,'excel_bizlist')||E(mk(pid,'excel_bizlist'));
   if(bl)bl.innerHTML=BIZ.map(b=>`<label class="check-bl-item"><input type="checkbox" value="${b.id}" onchange="updateExcelPreview('${pid}')"><span>${x(b.name)}</span></label>`).join('');
   updateExcelPreview(pid);
@@ -1470,7 +1480,8 @@ function updateExcelPreview(pid){
   const prev=pE(pid,'excel_preview')||E(mk(pid,'excel_preview'));if(!prev)return;
   if(!bizIds.length||!months.length){prev.textContent='업체와 월을 선택하세요.';return;}
   let cnt=0;bizIds.forEach(bizId=>{EXISTB.forEach(b=>{(b.history||[]).forEach(h=>{if(h.bizId!==bizId||!h.visitDate)return;const[y,m]=h.visitDate.split('-').map(Number);if(String(y)===year&&months.includes(m))cnt++;});});});
-  prev.textContent=`예상 ${cnt}건의 데이터`;
+  const selectedBizNames=bizIds.map(id=>(BIZ.find(b=>b.id===id)||{}).name||'').filter(Boolean);
+  prev.innerHTML=`<div style="font-size:14px;font-weight:700;color:var(--a);margin-bottom:6px;">📦 ${cnt}건</div><div style="font-size:11px;color:var(--m);">업체: ${selectedBizNames.join(', ')}<br>기간: ${year}년 ${months.join(', ')}월</div>`;
 }
 function exportExcel(pid){
   const year=(pE(pid,'excel_year')||E(mk(pid,'excel_year'))||{value:''}).value;
@@ -1538,7 +1549,7 @@ function renderCal(pid){
       <div class="cal-day-num"><span style="${numStyle}">${c.day}</span></div>
       ${reports.map(b=>`<div class="cal-event" style="background:${getBizColor(b.id)};color:#fff;">${x(b.name)}-성과보고</div>`).join('')}
       ${visits.map(v=>`<div class="cal-event" style="background:${getBizColor(v.bizId)};color:#fff;opacity:.85;">👤${v.nick}</div>`).join('')}
-      ${customs.map(e=>`<div class="cal-event custom">✦ ${e.text}</div>`).join('')}
+      ${customs.map(e=>{const evCol=e.bizId?getBizColor(e.bizId):'var(--end)';return`<div class="cal-event" style="background:${evCol};color:#fff;">✦ ${e.text}</div>`;}).join('')}
     </div>`;
   }).join('');
 }
@@ -1549,13 +1560,17 @@ function calOpenEvent(pid,dateStr){
   const evid=pE(pid,'cal_evid')||E(mk(pid,'cal_evid'));if(evid)evid.value='';
   const db2=pE(pid,'cal_delbtn')||E(mk(pid,'cal_delbtn'));if(db2)db2.style.display='none';
   const t=pE(pid,'cal_evtitle')||E(mk(pid,'cal_evtitle'));if(t)t.textContent=`일정 추가 - ${dateStr}`;
+  const bs=pE(pid,'cal_ev_biz')||E(mk(pid,'cal_ev_biz'));
+  if(bs)bs.innerHTML='<option value="">업체 없음 (보라색)</option>'+BIZ.map(b=>`<option value="${b.id}">● ${b.name}</option>`).join('');
   ep.style.display='block';
 }
 async function saveCalEvent(pid){
-  const date=(pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'))||{value:''}).value;const text=(pE(pid,'cal_evtext')||E(mk(pid,'cal_evtext'))||{value:''}).value;
+  const date=(pE(pid,'cal_evdate')||E(mk(pid,'cal_evdate'))||{value:''}).value;
+  const text=(pE(pid,'cal_evtext')||E(mk(pid,'cal_evtext'))||{value:''}).value;
+  const bizId=(pE(pid,'cal_ev_biz')||E(mk(pid,'cal_ev_biz'))||{value:''}).value;
   if(!date||!text){alert('날짜와 내용을 입력해주세요.');return;}
   const id=(pE(pid,'cal_evid')||E(mk(pid,'cal_evid'))||{value:''}).value||uid();
-  await fsSet('calEvents',id,{date,text});
+  await fsSet('calEvents',id,{date,text,bizId:bizId||''});
   const ep=pE(pid,'cal_evpanel')||E(mk(pid,'cal_evpanel'));if(ep)ep.style.display='none';
   toast('✓ 일정 저장됨','var(--a2)');
 }
@@ -1590,6 +1605,7 @@ function renderBizM(pid){
       <td>${b.url?`<a href="${x(b.url)}" target="_blank" class="bl">링크↗</a>`:'-'}</td>
       <td>${b.form?`<a href="${x(b.form)}" target="_blank" class="bl">폼↗</a>`:'-'}</td>
       <td style="font-size:11px;color:var(--m);">${x(b.visit)||'-'}</td>
+      <td style="font-size:11px;color:var(--m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(b.r1)||'-'}</td>
       <td style="font-size:11px;color:var(--m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(b.r2)||'-'}</td>
       <td style="font-size:11px;color:var(--m);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x(b.r3)||'-'}</td>
       <td><div class="fl" style="gap:3px;">
@@ -1605,7 +1621,7 @@ async function submitBiz(pid){
   const name=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!name){alert('업체명을 입력해주세요.');return;}
   const editId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value.trim();
-  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r2:gv('b_r2'),r3:gv('b_r3')};
+  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
   const id=editId||uid();
   // 즉시 로컬 업데이트 (Firebase 응답 기다리지 않고)
   const idx=BIZ.findIndex(b=>b.id===id);
@@ -1622,7 +1638,7 @@ async function submitBiz(pid){
 function editBiz(pid,id){
   const b=BIZ.find(b=>b.id===id);if(!b)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r2',b.r2);sv('b_r3',b.r3);
+  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
   const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
@@ -1708,7 +1724,7 @@ async function delBiz(pid,id){
   toast('삭제됨','var(--dn)');
 }
 function cancelBizEdit(pid){
-  ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
+  ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
   const kws=pE(pid,'b_kwsection')||E(mk(pid,'b_kwsection'));if(kws)kws.style.display='none';
