@@ -138,6 +138,7 @@ a.bl{color:var(--a);text-decoration:none;font-size:11px;}a.bl:hover{text-decorat
 .cal-day.other-month{opacity:.35;box-shadow:none;}
 .cal-day-num{font-weight:700;margin-bottom:3px;font-size:12px;}
 .cal-day.today .cal-day-num{color:var(--a);}
+.cal-day:hover .cal-add-btn{opacity:1!important;}
 .cal-event{border-radius:8px;padding:2px 5px;font-size:9px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;font-weight:600;}
 .cal-event.visit{background:var(--a);color:#fff;}
 .cal-event.contract{background:var(--a3);color:#5a4000;}
@@ -651,7 +652,7 @@ function mailHTML(pid){const p=pid+'_';return`
   </div>
 </div>`;}
 
-function progHTML(pid){return`<div class="stitle">체험단 진행 현황</div><div class="ssub">업체별 블로거 현황. 상태 클릭 시 해당 상태만 표시.</div><div class="fl" style="margin-bottom:10px;gap:6px;"><input id="${mk(pid,'prog_nick')}" placeholder="🔍 닉네임 검색" style="width:140px;font-size:11px;" oninput="renderProgress('${pid}')"><label class="lbl" style="display:inline;">정렬:</label><select id="${mk(pid,'prog_sort')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="nick">닉네임</option><option value="idx">IDX</option><option value="rk">RK</option><option value="visitDate">방문일</option></select><select id="${mk(pid,'prog_dir')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div><div id="${mk(pid,'prog_container')}"></div>`;}
+function progHTML(pid){return`<div class="stitle">체험단 진행 현황</div><div class="ssub">업체별 블로거 현황. 상태 클릭 시 해당 상태만 표시.</div><div class="fl" style="margin-bottom:10px;gap:6px;"><input id="${mk(pid,'prog_nick')}" placeholder="🔍 검색" style="width:140px;font-size:11px;" oninput="renderProgress('${pid}')"><label class="lbl" style="display:inline;">정렬:</label><select id="${mk(pid,'prog_sort')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="nick">닉네임</option><option value="idx">IDX</option><option value="rk">RK</option><option value="visitDate">방문일</option></select><select id="${mk(pid,'prog_dir')}" onchange="renderProgress('${pid}')" style="width:auto;font-size:11px;"><option value="asc">오름차순</option><option value="desc">내림차순</option></select></div><div id="${mk(pid,'prog_container')}"></div>`;}
 
 function excelHTML(pid){return`<div class="stitle">체험단 진행 엑셀파일</div><div class="ssub">업체·연도·월을 선택하면 해당 기간 방문한 블로거 정보를 엑셀로 내보냅니다.</div>
 <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
@@ -693,7 +694,7 @@ function calHTML(pid){return`<div class="stitle">일정 관리</div><div class="
   <div style="display:flex;gap:8px;margin-bottom:7px;align-items:flex-end;">
     <div class="fg" style="flex:0 0 150px;"><label class="lbl">날짜</label><input type="date" id="${mk(pid,'cal_evdate')}" style="width:150px;"></div>
     <div class="fg" style="flex:0 0 150px;"><label class="lbl">업체 (선택)</label><select id="${mk(pid,'cal_ev_biz')}" style="width:150px;"><option value="">업체 없음 (보라색)</option></select></div>
-    <div class="fg" style="flex:0 0 300px;"><label class="lbl">일정 내용</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용" style="width:300px;"></div>
+    <div class="fg" style="flex:0 0 300px;"><label class="lbl">일정 내용</label><input id="${mk(pid,'cal_evtext')}" placeholder="일정 내용" style="width:300px;" onkeydown="if(event.key==='Enter')saveCalEvent('${pid}')"></div>
   </div>
   <div style="display:flex;justify-content:flex-end;gap:6px;">
     <button class="btn btn-s btn-sm" onclick="E('${mk(pid,'cal_evpanel')}').style.display='none'">취소</button>
@@ -706,8 +707,8 @@ function bizmHTML(pid){const p=pid+'_';return`
 <div class="stitle">업체 관리</div><div class="ssub">업체 정보를 등록합니다.</div>
 <div class="qpanel">
   <div class="qtitle" id="${p}bizm_ftitle">⚡ 업체 추가</div>
-  <div style="display:flex;gap:16px;align-items:flex-start;">
-    <div style="flex:0 0 auto;">
+  <div style="display:flex;gap:0;align-items:flex-start;min-height:320px;">
+    <div style="flex:1;min-width:0;padding-right:16px;">
       <div style="display:flex;gap:8px;margin-bottom:7px;">
         <div class="fg"><label class="lbl">업체명 *</label><input id="${p}b_name" placeholder="예: ○○레스토랑" style="width:150px;"></div>
         <div class="fg"><label class="lbl">지역</label><input id="${p}b_reg" placeholder="예: 서울 강남구" style="width:150px;"></div>
@@ -728,12 +729,12 @@ function bizmHTML(pid){const p=pid+'_';return`
         <button class="btn btn-g" id="${p}b_savebtn" onclick="submitBiz('${pid}')">+ 업체 추가</button>
       </div>
     </div>
-    <div id="${p}b_kwsection" style="flex:1;min-width:200px;display:none;border-left:2px solid var(--a);padding-left:16px;">
+    <div id="${p}b_kwsection" style="flex:1;min-width:0;border-left:2px solid var(--a);padding-left:16px;">
       <div class="abar" style="margin-bottom:6px;">
-        <div class="ctitle" style="margin:0;">🔑 키워드 목록</div>
-        <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 키워드 추가</button>
+        <div class="ctitle" style="margin:0;">🔑 키워드</div>
+        <button class="btn btn-s btn-sm" onclick="openKwAddInline('${pid}')">+ 추가</button>
       </div>
-      <div id="${p}b_kwlist"></div>
+      <div id="${p}b_kwlist"><div style="color:var(--m);font-size:11px;padding:6px 0;">업체를 저장하면 키워드를 추가할 수 있습니다.</div></div>
       <div id="${p}b_kwform" style="display:none;background:var(--sf2);border-radius:8px;padding:10px;margin-top:6px;">
         <div class="ctitle" id="${p}b_kwformtitle" style="margin-bottom:7px;">키워드 추가</div>
         <input type="hidden" id="${p}b_kwid">
@@ -1453,8 +1454,8 @@ function renderProgress(pid){
           <button class="fbtn${bizFilter==='all'?' on':''}" onclick="setProgFilter('${pid}','${biz.id}','all')">전체(${bizBloggers.length})</button>
           ${STATUSES.filter(s=>stCounts[s]>0).map(s=>`<button class="fbtn${bizFilter===s?' on':''}" onclick="setProgFilter('${pid}','${biz.id}','${s}')">${s}(${stCounts[s]})</button>`).join('')}
         </div>
-        ${display.length?`<div style="overflow-x:auto;"><table style="font-size:11px;"><thead><tr><th>닉네임</th><th>IDX</th><th>RK</th><th>상태</th><th>방문일</th><th>포스팅기한</th></tr></thead><tbody>
-          ${display.map(e=>{const ov=e.postDeadline&&e.postDeadline<today&&e.status!=='완료'&&e.status!=='종료';return`<tr${ov?' style="color:var(--dn);"':''}}><td><strong>${x(e.nick)}</strong></td><td>${idxBadge(e.idx)}</td><td>${x(e.rk)||'-'}</td><td>${stBadge(e.status)}</td><td>${x(e.visitDate)||'-'}</td><td${ov?' style="font-weight:600;"':''}>${x(e.postDeadline)||'-'}</td></tr>`;}).join('')}
+        ${display.length?`<div style="overflow-x:auto;"><table style="font-size:11px;"><thead><tr><th>닉네임</th><th>이름</th><th>IDX</th><th>RK</th><th>상태</th><th>방문일</th><th>포스팅기한</th></tr></thead><tbody>
+          ${display.map(e=>{const ov=e.postDeadline&&e.postDeadline<today&&e.status!=='완료'&&e.status!=='종료';return`<tr${ov?' style="color:var(--dn);"':''}}><td><strong>${x(e.nick)}</strong></td><td style="color:var(--m);font-size:10px;">${x(e.name)||''}</td><td>${idxBadge(e.idx)}</td><td>${x(e.rk)||'-'}</td><td>${stBadge(e.status)}</td><td>${x(e.visitDate)||'-'}</td><td${ov?' style="font-weight:600;"':''}>${x(e.postDeadline)||'-'}</td></tr>`;}).join('')}
         </tbody></table></div>`:'<div style="padding:10px;font-size:11px;color:var(--m);">해당 상태 없음</div>'}
       </div>
     </div>`;
@@ -1546,8 +1547,8 @@ function renderCal(pid){
     });
     const numColor=c.dow===0?'#e53935':c.dow===6?'#1565c0':isT?'var(--a)':'var(--t)';
     const numStyle=isT?`display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--a);color:#fff;border-radius:50%;font-size:11px;`:`color:${numColor};`;
-    return`<div class="cal-day${isT?' today':''}" onclick="calOpenEvent('${pid}','${c.date}')">
-      <div class="cal-day-num"><span style="${numStyle}">${c.day}</span></div>
+    return`<div class="cal-day${isT?' today':''}">
+      <div class="cal-day-num" style="display:flex;align-items:center;justify-content:space-between;"><span style="${numStyle}">${c.day}</span><button onclick="calOpenEvent('${pid}','${c.date}')" style="opacity:0;font-size:9px;padding:0 3px;height:14px;border-radius:4px;border:1px solid var(--bd);background:var(--sf2);color:var(--m);cursor:pointer;line-height:1;transition:opacity .15s;" class="cal-add-btn">+</button></div>
       ${reports.map(b=>`<div class="cal-event" style="background:${getBizColor(b.id)};color:#fff;">${x(b.name)}-성과보고</div>`).join('')}
       ${visits.map(v=>`<div class="cal-event" style="background:${getBizColor(v.bizId)};color:#fff;opacity:.85;">👤${v.nick}</div>`).join('')}
       ${customs.map(e=>{const evCol=e.bizId?getBizColor(e.bizId):'var(--end)';const bizName=e.bizId?(BIZ.find(b=>b.id===e.bizId)||{}).name||'':'';const label=bizName?`${bizName} ${e.text}`:e.text;return`<div class="cal-event" style="background:${evCol};color:#fff;cursor:pointer;" onclick="event.stopPropagation();calEditEvent('${pid}','${e.id}')">✦ ${label}</div>`;}).join('')}
@@ -1644,7 +1645,13 @@ async function submitBiz(pid){
   fillAllBizSels();
   // Firebase 저장 (백그라운드)
   if(db){fsSet('businesses',id,entry).catch(e=>toast('Firebase 저장 오류: '+e.message,'var(--dn)'));}
-  cancelBizEdit(pid);
+  // 새 업체면 수정 모드로 전환, 기존이면 유지
+  if(!editId){
+    const eid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(eid)eid.value=id;
+    const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
+    const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
+    renderKwInline(pid,id);
+  }
   toast('✓ 저장됨','var(--a2)');
 }
 
@@ -1656,7 +1663,7 @@ function editBiz(pid,id){
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
   // 키워드 섹션 표시
-  const kws=pE(pid,'b_kwsection')||E(mk(pid,'b_kwsection'));if(kws)kws.style.display='block';
+  // 키워드 섹션은 항상 보임
   renderKwInline(pid,id);
   // 폼으로 스크롤
   const panel=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(panel)panel.style.display='none';
@@ -1680,7 +1687,8 @@ function renderKwInline(pid,bizId){
 }
 const sbState={};
 function openKwAddInline(pid){
-  const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;if(!bizId){alert('업체를 먼저 수정 모드로 열어주세요.');return;}
+  const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
+  if(!bizId){const nm=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!nm){alert('먼저 업체명을 입력하고 업체를 추가해주세요.');return;}submitBiz(pid).then(()=>openKwAddInline(pid));return;}
   ['b_kwid','b_kwname','b_kwsize'].forEach(b=>{const el=pE(pid,b)||E(mk(pid,b));if(el)el.value='';});
   sbState[pid]=[];renderSbList(pid);
   const ft=pE(pid,'b_kwformtitle')||E(mk(pid,'b_kwformtitle'));if(ft)ft.textContent='키워드 추가';
@@ -1740,7 +1748,7 @@ function cancelBizEdit(pid){
   ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
-  const kws=pE(pid,'b_kwsection')||E(mk(pid,'b_kwsection'));if(kws)kws.style.display='none';
+  const kwl=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(kwl)kwl.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">업체를 저장하면 키워드를 추가할 수 있습니다.</div>';
   const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf)kf.style.display='none';
 }
 
