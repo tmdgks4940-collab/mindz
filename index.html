@@ -408,7 +408,7 @@ function nbHTML(pid){const p=pid+'_';return`
 <div class="card">
   <div class="abar">
     <div><div class="ctitle">신규 블로거 목록</div><span id="${p}nb_count" class="mono">0명</span></div>
-    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:130px;font-size:11px;" oninput="renderNB('${pid}')"></div>
+    <div class="fl"><input id="${p}nb_srch" placeholder="🔍 검색" style="width:200px;font-size:11px;" oninput="renderNB('${pid}')"></div>
   </div>
   <div style="overflow-x:auto;"><table>
     <thead><tr><th onclick="sortNB('${pid}','nick')">닉네임</th><th>이메일</th><th>블로그</th><th onclick="sortNB('${pid}','idx')">IDX</th><th onclick="sortNB('${pid}','rk')">RK</th><th>검색어</th><th>사이즈</th><th>메모</th><th>삭제</th></tr></thead>
@@ -422,7 +422,7 @@ function ebHTML(pid){const p=pid+'_';return`
 <div class="card">
   <div class="abar">
     <div><div class="ctitle">기존 블로거 목록</div><span id="${p}eb_count" class="mono">0명</span></div>
-    <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">CSV</button></div>
+    <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">기존블로거 정리 파일</button></div>
   </div>
   <div style="overflow-x:auto;"><table>
     <thead><tr><th onclick="sortEB('${pid}','nick')" style="white-space:nowrap;">닉네임</th><th style="white-space:nowrap;">이름</th><th style="white-space:nowrap;">이메일</th><th style="white-space:nowrap;">블로그</th><th onclick="sortEB('${pid}','idx')" style="white-space:nowrap;">IDX</th><th onclick="sortEB('${pid}','rk')" style="white-space:nowrap;">RK</th><th onclick="sortEB('${pid}','lv')" style="white-space:nowrap;">LV</th><th onclick="sortEB('${pid}','rank')" style="white-space:nowrap;">순위</th><th onclick="sortEB('${pid}','sc')" style="white-space:nowrap;">SC</th><th style="white-space:nowrap;">계좌</th><th style="white-space:nowrap;">제외지역</th><th style="white-space:nowrap;">수집일</th><th style="white-space:nowrap;">파기일</th></tr></thead>
