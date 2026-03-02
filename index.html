@@ -426,7 +426,7 @@ function ebHTML(pid){const p=pid+'_';return`
     <div class="fl"><input id="${p}eb_srch" placeholder="🔍 +포함 -제외" style="width:150px;font-size:11px;" oninput="renderEB('${pid}')"><button class="btn btn-s btn-sm" onclick="expEB()">CSV</button></div>
   </div>
   <div style="overflow-x:auto;"><table>
-    <thead><tr><th onclick="sortEB('${pid}','nick')" style="white-space:nowrap;">닉네임</th><th style="white-space:nowrap;">이름</th><th style="white-space:nowrap;">이메일</th><th style="white-space:nowrap;">블로그</th><th onclick="sortEB('${pid}','idx')" style="white-space:nowrap;">IDX</th><th onclick="sortEB('${pid}','rk')" style="white-space:nowrap;">RK</th><th onclick="sortEB('${pid}','lv')" style="white-space:nowrap;">LV</th><th onclick="sortEB('${pid}','rank')" style="white-space:nowrap;">순위</th><th onclick="sortEB('${pid}','sc')" style="white-space:nowrap;">SC</th><th style="white-space:nowrap;">계좌</th><th style="white-space:nowrap;">제외지역</th><th style="white-space:nowrap;">수집일</th><th style="white-space:nowrap;">파기일</th></tr></thead>
+    <thead><tr><th onclick="sortEB('${pid}','nick')" style="white-space:nowrap;">닉네임</th><th style="white-space:nowrap;">이름</th><th style="white-space:nowrap;">이메일</th><th style="white-space:nowrap;">블로그</th><th onclick="sortEB('${pid}','idx')" style="white-space:nowrap;">IDX</th><th onclick="sortEB('${pid}','rk')" style="white-space:nowrap;">RK</th><th onclick="sortEB('${pid}','lv')" style="white-space:nowrap;">LV</th><th onclick="sortEB('${pid}','rank')" style="white-space:nowrap;">순위</th><th onclick="sortEB('${pid}','sc')" style="white-space:nowrap;">SC</th><th style="white-space:nowrap;">계좌</th><th style="white-space:nowrap;">제외지역</th><th style="white-space:nowrap;">수집일</th><th style="white-space:nowrap;">파기일</th><th>삭제</th></tr></thead>
     <tbody id="${p}eb_tbody"></tbody>
   </table></div>
   <div id="${p}eb_pager" class="pager"></div>
@@ -920,6 +920,19 @@ async function nbDel(id){
   await fsDel('newBloggers',id);toast('삭제됨','var(--m)');
 }
 
+async function ebDel(id){
+  const b=EXISTB.find(b=>b.id===id);if(!b)return;
+  if(!confirm(`"${b.nick}" 삭제?`))return;
+  if(!db){
+    EXISTB=EXISTB.filter(b=>b.id!==id);
+    panels.forEach(p=>{if(p.pageKey==='eb')renderEB(p.id);});
+    toast('삭제됨','var(--m)');
+    return;
+  }
+  await fsDel('existingBloggers',id);
+  toast('삭제됨','var(--m)');
+}
+
 function renderNB(pid){
   const s=getNBS(pid);
   const q=(pG(pid,'nb_srch')||(E(mk(pid,'nb_srch'))||{value:''}).value||'').toLowerCase();
@@ -1000,7 +1013,7 @@ function renderEB(pid){
   const pg=list.slice((page-1)*PER,page*PER);
   const tb=pE(pid,'eb_tbody')||E(mk(pid,'eb_tbody'));if(!tb)return;
   const today=ISO();
-  if(!pg.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">2️⃣</div><div class="empty-text">기존 블로거 없음.</div></div></td></tr>`;return;}
+  if(!pg.length){tb.innerHTML=`<tr><td colspan="14"><div class="empty"><div class="empty-icon">2️⃣</div><div class="empty-text">기존 블로거 없음.</div></div></td></tr>`;return;}
   tb.innerHTML=pg.map(b=>{
     const expCls=b.expiryDate&&b.expiryDate<today?'color:var(--dn);':'';
     return`<tr class="clickrow" onclick="if(!event.target.closest('button'))openEBEdit('${pid}','${b.id}')">
@@ -1014,6 +1027,7 @@ function renderEB(pid){
       <td style="font-size:11px;white-space:nowrap;">${x(b.exclRegion)||'-'}</td>
       <td style="font-size:10px;color:var(--m);white-space:nowrap;">${x(b.collectedDate)||'-'}</td>
       <td style="font-size:10px;white-space:nowrap;${expCls}">${x(b.expiryDate)||'-'}</td>
+      <td onclick="event.stopPropagation()"><button class="btn btn-d btn-xs" onclick="ebDel('${b.id}')">삭제</button></td>
     </tr>`;
   }).join('');
   renderPager(mk(pid,'eb_pager'),page,list.length,`(p)=>{getEBS('${pid}').page=p;renderEB('${pid}');}`);
