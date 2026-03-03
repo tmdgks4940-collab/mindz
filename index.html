@@ -1696,13 +1696,18 @@ function renderKwInline(pid,bizId){
     <div>
       <span style="font-weight:600;font-size:12px;">${x(k.name)}</span>
       <span style="color:var(--m);font-size:11px;margin-left:6px;">사이즈: ${x(k.size)||'-'}</span>
-      ${(k.smartEntries||[]).length?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${k.smartEntries.map(e=>`<span style="background:var(--sf2);border-radius:4px;padding:1px 5px;margin-right:3px;">${e.title||''}${e.lvRk?` (${e.lvRk})`:e.lv?` LV${e.lv}/순위${e.rk}`:''}</span>`).join('')}</div>`:''}
+      ${(k.smartEntries||[]).length?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${k.smartEntries.map(e=>`<span style="background:var(--sf2);border-radius:4px;padding:1px 5px;margin-right:3px;">${sbEntryLabel(e)}</span>`).join('')}</div>`:''}
     </div>
     <div style="display:flex;gap:4px;">
       <button class="btn btn-s btn-xs" onclick="editKwInline('${pid}','${k.id}')">수정</button>
       <button class="btn btn-d btn-xs" onclick="delKwInline('${k.id}','${pid}')">삭제</button>
     </div>
   </div>`).join('');
+}
+function sbEntryLabel(e){
+  if(e.lvRk){const allLvs=[],allRks=[];(e.lvRk||'').trim().split(/\s+/).forEach(pair=>{const pts=pair.split('.');if(pts.length===2){const lv=parseFloat(pts[0]),rk=parseFloat(pts[1]);if(lv>0)allLvs.push(lv);if(rk>0)allRks.push(rk);}});if(allLvs.length){const minLv=Math.min(...allLvs),maxLv=Math.max(...allLvs),maxRk=Math.max(...allRks);return `${e.title||''} ${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`}/순위${maxRk}이내`;}}
+  if(e.lv&&e.rk)return `${e.title||''} LV${e.lv}/순위${e.rk}`;
+  return e.title||'';
 }
 const sbState={};
 function openKwAddInline(pid){
