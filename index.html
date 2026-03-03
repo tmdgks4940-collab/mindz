@@ -549,7 +549,7 @@ function biz4HTML(pid){const p=pid+'_';return`
   </div>
   <div style="display:flex;justify-content:flex-end;gap:6px;">
     <button class="btn btn-s btn-sm" onclick="pE('${pid}','b4_paypanel').style.display='none'">취소</button>
-    <button class="btn btn-g" onclick="saveB4Payment('${pid}')">저장 (→종료)</button>
+    <button class="btn btn-g" onclick="saveB4Payment('${pid}')">저장</button>
   </div>
 </div>
 <div class="qpanel" id="${p}b4_comppanel" style="display:none;">
@@ -1128,6 +1128,7 @@ function renderBiz4List(pid){
       <td style="font-size:11px;">${e.postUrl?`<a href="${x(e.postUrl)}" target="_blank" class="bl" onclick="event.stopPropagation()">↗</a>`:'-'}</td>
       <td onclick="event.stopPropagation()"><div class="fl" style="gap:3px;">
         ${e.status==='종료'?`<button class="btn btn-o btn-xs" onclick="openB4Complete('${pid}','${e.id}')">이동</button>`:''}
+        ${e.status==='완료'&&e.accountNum&&e.ssn?`<button class="btn btn-a btn-xs" onclick="confirmB4Payment('${pid}','${e.id}')">✅ 입금완료</button>`:''}
         ${e.status==='완료'?`<button class="btn btn-p btn-xs" onclick="openB4PaymentPanel('${pid}','${e.id}')">💳 입금처</button>`:''}
         <button class="btn btn-d btn-xs" onclick="delBiz4Entry('${pid}','${e.id}')">삭제</button>
       </div></td>
@@ -1138,11 +1139,11 @@ function renderBiz4List(pid){
 
 async function onB4StatusChange(pid,sel,id){
   const newSt=sel.value;const entry=BIZB.find(e=>e.id===id);if(!entry)return;const oldSt=entry.status;if(newSt===oldSt)return;
-  if(newSt==='종료'&&(!entry.accountNum||!entry.ssn)){sel.value=oldSt;toast('⚠️ 입금처/신분증 먼저 입력해주세요.','var(--dn)');return;}
   if(newSt==='일정확정'&&!entry.visitDate){sel.value=oldSt;toast('⚠️ 방문일을 먼저 입력해주세요.','var(--dn)');return;}
-  await fsUpd('bizBloggers',id,{status:newSt});
+  const upd={status:newSt};
+  if(newSt==='종료'){const FD=firebase.firestore.FieldValue.delete();upd.accountNum=FD;upd.ssn=FD;}
+  await fsUpd('bizBloggers',id,upd);
   if(newSt==='거절')openB4RejectPanel(pid,id);
-  else if(newSt==='종료')openB4PaymentPanel(pid,id);
   toast(`"${entry.nick}" → ${newSt}`,'var(--a2)');
 }
 
@@ -1183,6 +1184,12 @@ async function saveB4Reject(pid){
   const el=pE(pid,'b4_rejpanel')||E(mk(pid,'b4_rejpanel'));if(el)el.style.display='none';
   toast('거절 처리됨','var(--m)');
 }
+async function confirmB4Payment(pid,id){
+  if(!confirm('입금완료 처리하시겠습니까?\n계좌번호와 주민번호가 삭제되고 상태가 종료로 변경됩니다.'))return;
+  const FD=firebase.firestore.FieldValue.delete();
+  await fsUpd('bizBloggers',id,{status:'종료',accountNum:FD,ssn:FD});
+  toast('✓ 입금완료 처리됨','var(--a2)');
+}
 function openB4PaymentPanel(pid,id){
   const e=BIZB.find(b=>b.id===id);if(!e)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
@@ -1193,11 +1200,9 @@ async function saveB4Payment(pid){
   const id=(pE(pid,'b4_payeid')||E(mk(pid,'b4_payeid'))||{value:''}).value;
   const acct=(pE(pid,'b4_payacct')||E(mk(pid,'b4_payacct'))||{value:''}).value.trim();const ssn=(pE(pid,'b4_payssn')||E(mk(pid,'b4_payssn'))||{value:''}).value.trim();
   if(!acct||!ssn){toast('계좌번호와 주민번호를 모두 입력해주세요.','var(--dn)');return;}
-  await fsUpd('bizBloggers',id,{accountNum:acct,ssn,status:'종료'});
-  const e=BIZB.find(b=>b.id===id);
-  if(e&&e.existBId)await fsUpd('existingBloggers',e.existBId,{accountNum:acct,ssn});
+  await fsUpd('bizBloggers',id,{accountNum:acct,ssn});
   const el=pE(pid,'b4_paypanel')||E(mk(pid,'b4_paypanel'));if(el)el.style.display='none';
-  openB4Complete(pid,id);toast('✓ 입금 정보 저장됨','var(--a2)');
+  toast('✓ 입금 정보 저장됨 — 입금완료 버튼을 눌러 종료하세요.','var(--a2)');
 }
 function openB4Complete(pid,id){
   const e=BIZB.find(b=>b.id===id);if(!e)return;
@@ -1214,7 +1219,7 @@ async function doB4Complete(pid){
   try{
     const existB=EXISTB.find(b=>b.id===e.existBId);
     if(existB){await fsUpd('existingBloggers',e.existBId,{history:[...(existB.history||[]),histEntry]});}
-    else{await fsSet('existingBloggers',uid(),{nick:e.nick,name:e.name||'',email:e.email||'',url:e.url||'',phone:e.phone||'',idx:e.idx||'',rk:e.rk||'',lv:e.lv||'',rank:e.rank||'',sc:e.sc||'',accountNum:e.accountNum||'',ssn:e.ssn||'',memos:e.memos||[],history:[histEntry],collectedDate:ISO()});}
+    else{await fsSet('existingBloggers',uid(),{nick:e.nick,name:e.name||'',email:e.email||'',url:e.url||'',phone:e.phone||'',idx:e.idx||'',rk:e.rk||'',lv:e.lv||'',rank:e.rank||'',sc:e.sc||'',memos:e.memos||[],history:[histEntry],collectedDate:ISO()});}
     await fsDel('bizBloggers',id);
     const el=pE(pid,'b4_comppanel')||E(mk(pid,'b4_comppanel'));if(el)el.style.display='none';
     toast(`✓ "${e.nick}" 완료 → 기존 블로거 이동됨`,'var(--a2)');
@@ -1691,7 +1696,7 @@ function renderKwInline(pid,bizId){
     <div>
       <span style="font-weight:600;font-size:12px;">${x(k.name)}</span>
       <span style="color:var(--m);font-size:11px;margin-left:6px;">사이즈: ${x(k.size)||'-'}</span>
-      ${(k.smartEntries||[]).length?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${k.smartEntries.map(e=>`<span style="background:var(--sf2);border-radius:4px;padding:1px 5px;margin-right:3px;">${e.title||''}  LV${e.lv}/순위${e.rk}</span>`).join('')}</div>`:''}
+      ${(k.smartEntries||[]).length?`<div style="font-size:10px;color:var(--m);margin-top:2px;">${k.smartEntries.map(e=>`<span style="background:var(--sf2);border-radius:4px;padding:1px 5px;margin-right:3px;">${e.title||''}${e.lvRk?` (${e.lvRk})`:e.lv?` LV${e.lv}/순위${e.rk}`:''}</span>`).join('')}</div>`:''}
     </div>
     <div style="display:flex;gap:4px;">
       <button class="btn btn-s btn-xs" onclick="editKwInline('${pid}','${k.id}')">수정</button>
@@ -1712,13 +1717,13 @@ function editKwInline(pid,id){
   const k=KWDS.find(k=>k.id===id);if(!k)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
   sv('b_kwid',k.id);sv('b_kwname',k.name);sv('b_kwsize',k.size||'');
-  sbState[pid]=[...(k.smartEntries||[])];renderSbList(pid);
+  sbState[pid]=(k.smartEntries||[]).map(e=>e.lvRk!==undefined?e:{title:e.title||'',lvRk:(e.lv&&e.rk)?`${e.lv}.${e.rk}`:''});renderSbList(pid);
   const ft=pE(pid,'b_kwformtitle')||E(mk(pid,'b_kwformtitle'));if(ft)ft.textContent='키워드 수정';
   const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf){kf.style.display='block';kf.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
 function addSmartBlock(pid){
   if(!sbState[pid])sbState[pid]=[];
-  sbState[pid].push({title:'',lv:'',rk:''});
+  sbState[pid].push({title:'',lvRk:''});
   renderSbList(pid);
 }
 function renderSbList(pid){
@@ -1727,8 +1732,7 @@ function renderSbList(pid){
   if(!sbs.length){el.innerHTML='<div style="color:var(--m);font-size:11px;">스마트블록 없음</div>';return;}
   el.innerHTML=sbs.map((sb,i)=>`<div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
     <input placeholder="스마트블록 제목" style="flex:2;" value="${x(sb.title)}" oninput="sbState['${pid}'][${i}].title=this.value">
-    <input placeholder="LV" style="width:50px;" value="${x(sb.lv)}" oninput="sbState['${pid}'][${i}].lv=this.value">
-    <input placeholder="순위" style="width:50px;" value="${x(sb.rk)}" oninput="sbState['${pid}'][${i}].rk=this.value">
+    <input placeholder="예: 3.15 4.20 3.8" style="width:140px;" value="${x(sb.lvRk||'')}" oninput="sbState['${pid}'][${i}].lvRk=this.value">
     <button class="btn btn-d btn-xs" onclick="sbState['${pid}'].splice(${i},1);renderSbList('${pid}')">✕</button>
   </div>`).join('');
 }
@@ -1736,9 +1740,9 @@ async function saveKwInline(pid){
   const bizId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;if(!bizId)return;
   const name=(pE(pid,'b_kwname')||E(mk(pid,'b_kwname'))||{value:''}).value.trim();if(!name){alert('키워드를 입력하세요.');return;}
   const size=(pE(pid,'b_kwsize')||E(mk(pid,'b_kwsize'))||{value:''}).value.trim();
-  const entries=(sbState[pid]||[]).filter(s=>s.title||s.lv);
+  const entries=(sbState[pid]||[]).filter(s=>s.title||s.lvRk);
   let smartSummary='';
-  if(entries.length){const lvs=entries.map(e=>parseFloat(e.lv)||0).filter(Boolean);const rks=entries.map(e=>parseFloat(e.rk)||0);if(lvs.length){const minLv=Math.min(...lvs),maxLv=Math.max(...lvs);const maxRk=Math.max(...rks);smartSummary=`${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`}/순위${maxRk}위`;}}
+  if(entries.length){const allLvs=[],allRks=[];entries.forEach(e=>{(e.lvRk||'').trim().split(/\s+/).forEach(pair=>{const pts=pair.split('.');if(pts.length===2){const lv=parseFloat(pts[0]),rk=parseFloat(pts[1]);if(lv>0)allLvs.push(lv);if(rk>0)allRks.push(rk);}});});if(allLvs.length){const minLv=Math.min(...allLvs),maxLv=Math.max(...allLvs);const maxRk=Math.max(...allRks);smartSummary=`${minLv===maxLv?`LV${minLv}`:`LV${minLv}~${maxLv}`}/순위${maxRk}이내`;}}
   const editId=(pE(pid,'b_kwid')||E(mk(pid,'b_kwid'))||{value:''}).value;
   await fsSet('keywords',editId||uid(),{bizId,name,size,smartEntries:entries,smartSummary,addedDate:ISO()});
   const kf=pE(pid,'b_kwform')||E(mk(pid,'b_kwform'));if(kf)kf.style.display='none';
