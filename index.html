@@ -35,6 +35,9 @@ body.dark .sri{border-color:var(--bd);}
 body.dark .infobox{background:var(--sf2);}
 .sb-chip{background:rgba(124,77,255,.08);border:1px solid rgba(124,77,255,.25);color:#5c35b5;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;line-height:1.4;}
 body.dark .sb-chip{background:rgba(124,77,255,.15);border-color:rgba(124,77,255,.35);color:#b39ddb;}
+.kw-row{padding:8px 10px;background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:5px;}
+body.dark .kw-row{background:var(--sf);color:var(--t);}
+body.dark .cal-bflt:not(.sel){color:var(--a) !important;background:var(--sf2) !important;}
 *{transition:background-color .2s,border-color .2s,color .15s;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--t);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
@@ -718,6 +721,7 @@ function bizmHTML(pid){const p=pid+'_';return`
       <div style="display:flex;gap:8px;margin-bottom:7px;">
         <div class="fg"><label class="lbl">계약일</label><input type="date" id="${p}b_cs" style="width:150px;"></div>
         <div class="fg"><label class="lbl">계약종료일</label><input type="date" id="${p}b_ce" style="width:150px;"></div>
+        <div class="fg"><label class="lbl">성과보고일</label><input type="number" id="${p}b_report" placeholder="예: 15" min="1" max="31" style="width:80px;"></div>
       </div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..." style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
@@ -1535,9 +1539,9 @@ function setCalBizFilter(pid,bizId){calBizFilter[pid]=bizId;renderCal(pid);}
 function renderCalBizList(pid){
   const el=pE(pid,'cal_biz_list')||E(mk(pid,'cal_biz_list'));if(!el)return;
   const cur=calBizFilter[pid]||'all';
-  el.innerHTML=`<button onclick="setCalBizFilter('${pid}','all')" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${cur==='all'?'var(--a)':'var(--bd)'};background:${cur==='all'?'rgba(3,199,90,.08)':'#fff'};color:${cur==='all'?'var(--a)':'var(--t)'};font-size:11px;font-weight:${cur==='all'?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;">전체</button>`
+  el.innerHTML=`<button onclick="setCalBizFilter('${pid}','all')" class="cal-bflt${cur==='all'?' sel':''}" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${cur==='all'?'var(--a)':'var(--bd)'};background:${cur==='all'?'rgba(3,199,90,.08)':'#fff'};color:${cur==='all'?'var(--a)':'var(--t)'};font-size:11px;font-weight:${cur==='all'?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;">전체</button>`
   +BIZ.map(b=>{const color=getBizColor(b.id);const sel=cur===b.id;
-    return`<button onclick="setCalBizFilter('${pid}','${b.id}')" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${sel?color:'var(--bd)'};background:${sel?color+'18':'#fff'};color:${sel?color:'var(--t)'};font-size:11px;font-weight:${sel?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle;"></span>${x(b.name)}</button>`;
+    return`<button onclick="setCalBizFilter('${pid}','${b.id}')" class="cal-bflt${sel?' sel':''}" style="text-align:left;padding:6px 10px;border-radius:8px;border:1px solid ${sel?color:'var(--bd)'};background:${sel?color+'18':'#fff'};color:${sel?color:'var(--t)'};font-size:11px;font-weight:${sel?'700':'500'};cursor:pointer;width:100%;font-family:inherit;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};margin-right:5px;vertical-align:middle;"></span>${x(b.name)}</button>`;
   }).join('');
 }
 function renderCal(pid){
@@ -1562,9 +1566,9 @@ function renderCal(pid){
     const visits=visitMap[c.date]||[];
     const customs=CALEVENTS.filter(e=>e.date===c.date);
     const reports=BIZ.filter(b=>{
-      if(!b.contractStart)return false;
+      if(!b.reportDay)return false;
       if(filterBizId!=='all'&&b.id!==filterBizId)return false;
-      return parseInt(b.contractStart.split('-')[2])===c.day;
+      return parseInt(b.reportDay)===c.day;
     });
     const numColor=c.dow===0?'#e53935':c.dow===6?'#1565c0':isT?'var(--a)':'var(--t)';
     const numStyle=isT?`display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--a);color:#fff;border-radius:50%;font-size:11px;`:`color:${numColor};`;
@@ -1656,7 +1660,7 @@ async function submitBiz(pid){
   const name=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!name){alert('업체명을 입력해주세요.');return;}
   const editId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value.trim();
-  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
+  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),reportDay:gv('b_report'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
   const id=editId||uid();
   // 즉시 로컬 업데이트 (Firebase 응답 기다리지 않고)
   const idx=BIZ.findIndex(b=>b.id===id);
@@ -1679,7 +1683,7 @@ async function submitBiz(pid){
 function editBiz(pid,id){
   const b=BIZ.find(b=>b.id===id);if(!b)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
+  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_report',b.reportDay);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
   const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
@@ -1694,7 +1698,7 @@ function renderKwInline(pid,bizId){
   const list=KWDS.filter(k=>k.bizId===bizId);
   const el=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(!el)return;
   if(!list.length){el.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">키워드 없음</div>';return;}
-  el.innerHTML=list.map(k=>`<div style="padding:8px 10px;background:#fff;border:1px solid var(--bd);border-radius:10px;margin-bottom:5px;">
+  el.innerHTML=list.map(k=>`<div class="kw-row">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${(k.smartEntries||[]).length?'6px':'0'};">
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-weight:700;font-size:13px;">${x(k.name)}</span>
@@ -1772,7 +1776,7 @@ async function delBiz(pid,id){
   toast('삭제됨','var(--dn)');
 }
 function cancelBizEdit(pid){
-  ['b_name','b_reg','b_cs','b_ce','b_url','b_form','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
+  ['b_name','b_reg','b_cs','b_ce','b_report','b_url','b_form','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
   const kwl=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(kwl)kwl.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">업체를 저장하면 키워드를 추가할 수 있습니다.</div>';
