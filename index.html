@@ -484,7 +484,7 @@ function biz4HTML(pid){const p=pid+'_';return`
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
   <select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')" style="width:180px;"><option value="">-- 업체 선택 --</option></select>
   <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
-  <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">📋 구글폼 CSV</button>
+  <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')">📋 구글폼 정보 가져오기</button>
 </div>
 <div class="qpanel" id="${p}biz4_addpanel" style="display:none;">
   <div class="qtitle">+ 블로거 추가</div>
@@ -493,8 +493,12 @@ function biz4HTML(pid){const p=pid+'_';return`
   <div style="display:flex;justify-content:flex-end;margin-top:7px;"><button class="btn btn-s btn-sm" onclick="biz4ToggleAdd('${pid}')">닫기</button></div>
 </div>
 <div class="qpanel" id="${p}biz4_gformpanel" style="display:none;">
-  <div class="qtitle">📋 구글폼 CSV 매칭</div>
-  <div class="infobox">컬럼: A:타임스탬프 | B:이름 | C:닉네임 | D:연락처 | E:이메일 | F:블로그주소</div>
+  <div class="qtitle">📋 구글폼 정보 가져오기</div>
+  <div class="infobox">컬럼: A:타임스탬프 | B:이름 | C:닉네임 | D:연락처 | E:이메일 | F:블로그주소 | G:동의여부(무시)</div>
+  <div class="fg" style="margin-bottom:7px;">
+    <label class="lbl">구글 시트 URL (링크 공개 설정 필요)</label>
+    <div style="display:flex;gap:4px;"><input id="${p}gform_url" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;font-size:11px;"><button class="btn btn-g btn-sm" onclick="fetchGFormURL('${pid}')">불러오기</button></div>
+  </div>
   <div style="border:2px dashed var(--bd);border-radius:7px;padding:10px;text-align:center;cursor:pointer;margin-bottom:7px;color:var(--m);font-size:11px;" onclick="E('${p}gform_file').click()">📂 CSV 파일 선택<input type="file" id="${p}gform_file" accept=".csv,.txt" style="display:none" onchange="gformCSVFile('${pid}')"></div>
   <div class="fg" style="margin-bottom:7px;"><label class="lbl">또는 CSV 붙여넣기</label><textarea id="${p}gform_paste" rows="3"></textarea></div>
   <div id="${p}gform_result" style="font-size:11px;color:var(--a2);min-height:14px;margin-bottom:7px;"></div>
@@ -725,6 +729,7 @@ function bizmHTML(pid){const p=pid+'_';return`
       </div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..." style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">Apps Script URL (응답 자동 수집용)</label><input id="${p}b_sheet" placeholder="https://script.google.com/macros/s/..." style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">방문 가능 일자</label><input id="${p}b_visit" placeholder="평일 12시~21시" style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ①</label><input id="${p}b_r1" placeholder="1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입" style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ②</label><input id="${p}b_r2" style="width:308px;"></div></div>
@@ -1240,6 +1245,22 @@ function biz4ToggleAdd(pid){
 function biz4ToggleGForm(pid){
   const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
   s.gformOpen=!s.gformOpen;const el=pE(pid,'biz4_gformpanel')||E(mk(pid,'biz4_gformpanel'));if(el)el.style.display=s.gformOpen?'block':'none';
+  if(s.gformOpen){const biz=BIZ.find(b=>b.id===s.bizId);const ui=pE(pid,'gform_url')||E(mk(pid,'gform_url'));if(ui)ui.value=(biz&&biz.sheet)||'';}
+}
+async function fetchGFormURL(pid){
+  const urlInput=pE(pid,'gform_url')||E(mk(pid,'gform_url'));if(!urlInput)return;
+  const url=urlInput.value.trim();if(!url){alert('업체 관리에서 Apps Script URL을 먼저 입력해주세요.');return;}
+  const res=pE(pid,'gform_result')||E(mk(pid,'gform_result'));if(res)res.textContent='불러오는 중...';
+  try{
+    const resp=await fetch(url);if(!resp.ok)throw new Error();
+    const data=await resp.json();
+    if(!data.values||!data.values.length){if(res)res.textContent='응답 데이터가 없습니다.';return;}
+    const csv=[data.values[0],...data.values.slice(1)].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const ta=pE(pid,'gform_paste')||E(mk(pid,'gform_paste'));if(ta)ta.value=csv;
+    if(res)res.textContent=`✓ ${data.values.length-1}행 불러옴. "매칭 실행"을 클릭하세요.`;
+  }catch(e){
+    if(res)res.textContent='❌ 불러오기 실패 — 업체 관리의 Apps Script URL을 확인해주세요.';
+  }
 }
 function biz4SearchB(pid){getBiz4S(pid).q=(pE(pid,'biz4_srch')||E(mk(pid,'biz4_srch'))||{value:''}).value;biz4RenderBR(pid);}
 function biz4RenderBR(pid){
@@ -1660,7 +1681,7 @@ async function submitBiz(pid){
   const name=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!name){alert('업체명을 입력해주세요.');return;}
   const editId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value.trim();
-  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),reportDay:gv('b_report'),url:gv('b_url'),form:gv('b_form'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
+  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),reportDay:gv('b_report'),url:gv('b_url'),form:gv('b_form'),sheet:gv('b_sheet'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
   const id=editId||uid();
   // 즉시 로컬 업데이트 (Firebase 응답 기다리지 않고)
   const idx=BIZ.findIndex(b=>b.id===id);
@@ -1683,7 +1704,7 @@ async function submitBiz(pid){
 function editBiz(pid,id){
   const b=BIZ.find(b=>b.id===id);if(!b)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_report',b.reportDay);sv('b_url',b.url);sv('b_form',b.form);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
+  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_report',b.reportDay);sv('b_url',b.url);sv('b_form',b.form);sv('b_sheet',b.sheet);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
   const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
@@ -1776,7 +1797,7 @@ async function delBiz(pid,id){
   toast('삭제됨','var(--dn)');
 }
 function cancelBizEdit(pid){
-  ['b_name','b_reg','b_cs','b_ce','b_report','b_url','b_form','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
+  ['b_name','b_reg','b_cs','b_ce','b_report','b_url','b_form','b_sheet','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
   const kwl=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(kwl)kwl.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">업체를 저장하면 키워드를 추가할 수 있습니다.</div>';
