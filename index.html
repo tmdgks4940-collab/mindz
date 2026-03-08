@@ -10,8 +10,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f8f9fa;--sf:#ffffff;--sf2:#f1f3f5;--bd:#e0e4e8;--a:#03c75a;--a2:#00b96b;--a3:#f7c948;--t:#1a1a1a;--m:#888ea8;--dn:#e53935;--end:#7c4dff;--pay:#00b96b;}
-body.dark{--bg:#0f0f12;--sf:#17171d;--sf2:#1e1e27;--bd:#2a2a38;--t:#e8e8f0;--m:#7a7a9a;}
+:root{--bg:#f8f9fa;--sf:#ffffff;--sf2:#f1f3f5;--bd:#e0e4e8;--a:#03c75a;--a2:#00b96b;--a3:#f7c948;--t:#1a1a1a;--m:#1a1a1a;--dn:#e53935;--end:#7c4dff;--pay:#00b96b;}
+body.dark{--bg:#0f0f12;--sf:#17171d;--sf2:#1e1e27;--bd:#2a2a38;--t:#e8e8f0;--m:#e8e8f0;}
 body.dark header{background:var(--sf);}
 body.dark .chrome-tabbar{background:var(--sf);}
 body.dark .panel-nav{background:var(--sf);}
@@ -123,7 +123,7 @@ a.bl{color:var(--a);text-decoration:none;font-size:11px;}a.bl:hover{text-decorat
 .sri:hover{background:rgba(3,199,90,.03);}
 .xmark{color:var(--dn);font-size:11px;margin-left:3px;font-weight:700;}
 .idx-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;}
-.st-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f1f3f5;color:#555;}
+.st-badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:#f1f3f5;color:#1a1a1a;}
 .mail-edit{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:10px;font-size:12px;line-height:1.9;color:var(--t);width:100%;min-height:240px;resize:vertical;font-family:'Noto Sans KR',sans-serif;}
 .tmpl-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
 .tb{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:2px solid var(--bd);background:#fff;color:var(--m);transition:all .15s;font-family:inherit;}
@@ -1529,7 +1529,7 @@ function exportExcel(pid){
 // ════ 캘린더 ════
 const calState={};
 const BIZ_COLORS=['#03c75a','#1565c0','#e53935','#f57f17','#7b1fa2','#00695c','#c2185b','#0288d1','#558b2f','#6d4c41'];
-function getBizColor(bizId){const idx=BIZ.findIndex(b=>b.id===bizId);return BIZ_COLORS[idx%BIZ_COLORS.length]||'#888';}
+function getBizColor(bizId){const idx=BIZ.findIndex(b=>b.id===bizId);return BIZ_COLORS[idx%BIZ_COLORS.length]||'#1a1a1a';}
 const calBizFilter={};
 function initCalS(pid){if(!calState[pid]){const n=new Date();calState[pid]={year:n.getFullYear(),month:n.getMonth()};}}
 function calNav(pid,dir){initCalS(pid);const s=calState[pid];s.month+=dir;if(s.month<0){s.month=11;s.year--;}if(s.month>11){s.month=0;s.year++;}renderCal(pid);}
