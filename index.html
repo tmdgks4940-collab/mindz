@@ -484,6 +484,7 @@ function biz4HTML(pid){const p=pid+'_';return`
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
   <select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')" style="width:180px;"><option value="">-- 업체 선택 --</option></select>
   <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
+  <input id="${p}gform_month" type="number" min="1" max="12" placeholder="월" style="width:52px;text-align:center;">
   <button class="btn btn-s btn-sm" onclick="importGFormAuto('${pid}')">📋 신청폼 가져오기</button>
   <button class="btn btn-s btn-sm" onclick="togglePostFormPanel('${pid}')">📝 포스팅 확인폼</button>
   <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')" style="font-size:10px;color:var(--m);">CSV 수동</button>
@@ -1261,11 +1262,14 @@ function biz4ToggleGForm(pid){
 }
 async function importGFormAuto(pid){
   const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
+  const biz=BIZ.find(b=>b.id===s.bizId);if(!biz){return;}
+  const month=(pE(pid,'gform_month')||E(mk(pid,'gform_month'))||{value:''}).value.trim();
+  if(!month){alert('월을 입력해주세요. (예: 3)');return;}
   const scriptUrl=localStorage.getItem('mm_gscript')||'';
   if(!scriptUrl){alert('설정 탭에서 Apps Script URL을 먼저 입력해주세요.');return;}
   toast('불러오는 중...','var(--m)');
   try{
-    const resp=await fetch(scriptUrl+'?bizId='+encodeURIComponent(s.bizId));if(!resp.ok)throw new Error();
+    const resp=await fetch(scriptUrl+'?bizId='+encodeURIComponent(biz.name)+'&month='+encodeURIComponent(month));if(!resp.ok)throw new Error();
     const data=await resp.json();
     if(!data.values||data.values.length<2){toast('응답 데이터가 없습니다.','var(--a3)');return;}
     // 컬럼: [0]타임스탬프 [1]성함 [2]연락처 [3]이메일 [4]블로그주소
@@ -1344,7 +1348,7 @@ async function importPostForm(pid){
   if(!scriptUrl){alert('설정 탭에서 Apps Script URL을 먼저 입력해주세요.');return;}
   toast('포스팅 확인폼 불러오는 중...','var(--m)');
   try{
-    const resp=await fetch(scriptUrl+'?type=post&bizId='+encodeURIComponent(s.bizId));if(!resp.ok)throw new Error();
+    const resp=await fetch(scriptUrl+'?type=post&bizId='+encodeURIComponent(biz.name));if(!resp.ok)throw new Error();
     const data=await resp.json();
     if(!data.values||data.values.length<2){toast('응답 데이터가 없습니다.','var(--a3)');return;}
     // 컬럼: [0]타임스탬프 [1]성명 [2]주민번호 [3]은행명 [4]계좌번호 [5]예금주명 [6]포스팅링크
