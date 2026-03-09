@@ -484,7 +484,8 @@ function biz4HTML(pid){const p=pid+'_';return`
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
   <select id="${p}bizsel" class="biz4_bizsel_${pid}" onchange="biz4Change('${pid}')" style="width:180px;"><option value="">-- 업체 선택 --</option></select>
   <button class="btn btn-g btn-sm" onclick="biz4ToggleAdd('${pid}')">+ 블로거 추가</button>
-  <button class="btn btn-s btn-sm" onclick="importGFormAuto('${pid}')">📋 구글폼 가져오기</button>
+  <button class="btn btn-s btn-sm" onclick="importGFormAuto('${pid}')">📋 신청폼 가져오기</button>
+  <button class="btn btn-s btn-sm" onclick="togglePostFormPanel('${pid}')">📝 포스팅 확인폼</button>
   <button class="btn btn-s btn-sm" onclick="biz4ToggleGForm('${pid}')" style="font-size:10px;color:var(--m);">CSV 수동</button>
 </div>
 <div class="qpanel" id="${p}biz4_addpanel" style="display:none;">
@@ -493,9 +494,18 @@ function biz4HTML(pid){const p=pid+'_';return`
   <div id="${p}biz4_results" style="border:1px solid var(--bd);border-radius:7px;max-height:260px;overflow-y:auto;"></div>
   <div style="display:flex;justify-content:flex-end;margin-top:7px;"><button class="btn btn-s btn-sm" onclick="biz4ToggleAdd('${pid}')">닫기</button></div>
 </div>
+<div class="qpanel" id="${p}biz4_postformpanel" style="display:none;">
+  <div class="qtitle">📝 포스팅 확인폼 가져오기</div>
+  <div class="infobox">컬럼: A:타임스탬프 | B:성명 | C:주민등록번호 | D:입금계좌(은행명) | E:계좌번호 | F:예금주명 | G:포스팅링크<br>이름으로 블로거를 매칭합니다. 동명이인은 직접 선택합니다.</div>
+  <div id="${p}postform_ambiguous" style="display:none;margin-bottom:8px;"></div>
+  <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+    <button class="btn btn-s btn-sm" onclick="togglePostFormPanel('${pid}')">닫기</button>
+    <button class="btn btn-g btn-sm" onclick="importPostForm('${pid}')">가져오기</button>
+  </div>
+</div>
 <div class="qpanel" id="${p}biz4_gformpanel" style="display:none;">
   <div class="qtitle">CSV 수동 입력</div>
-  <div class="infobox">컬럼: A:타임스탬프 | B:이름 | C:닉네임 | D:연락처 | E:이메일 | F:블로그주소 | G:동의여부(무시)</div>
+  <div class="infobox">컬럼: A:타임스탬프 | B:성함 | C:연락처 | D:이메일 | E:블로그주소</div>
   <div style="border:2px dashed var(--bd);border-radius:7px;padding:10px;text-align:center;cursor:pointer;margin-bottom:7px;color:var(--m);font-size:11px;" onclick="E('${p}gform_file').click()">📂 CSV 파일 선택<input type="file" id="${p}gform_file" accept=".csv,.txt" style="display:none" onchange="gformCSVFile('${pid}')"></div>
   <div class="fg" style="margin-bottom:7px;"><label class="lbl">또는 CSV 붙여넣기</label><textarea id="${p}gform_paste" rows="3"></textarea></div>
   <div id="${p}gform_result" style="font-size:11px;color:var(--a2);min-height:14px;margin-bottom:7px;"></div>
@@ -725,8 +735,8 @@ function bizmHTML(pid){const p=pid+'_';return`
         <div class="fg"><label class="lbl">성과보고일</label><input type="number" id="${p}b_report" placeholder="예: 15" min="1" max="31" style="width:80px;"></div>
       </div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">업체 플레이스 URL</label><input id="${p}b_url" placeholder="https://naver.me/..." style="width:308px;"></div></div>
-      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">구글폼 링크</label><input id="${p}b_form" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
-      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">Apps Script URL (응답 자동 수집용)</label><input id="${p}b_sheet" placeholder="https://script.google.com/macros/s/..." style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">신청 구글폼 링크 (매달 교체)</label><input id="${p}b_form" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
+      <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">포스팅 확인 구글폼 링크 (영구 고정)</label><input id="${p}b_postform" placeholder="https://forms.gle/..." style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">방문 가능 일자</label><input id="${p}b_visit" placeholder="평일 12시~21시" style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ①</label><input id="${p}b_r1" placeholder="1,000자 이상/ 사진 15장 이상/ 플레이스 지도 삽입" style="width:308px;"></div></div>
       <div style="margin-bottom:7px;"><div class="fg"><label class="lbl">공통사항 ②</label><input id="${p}b_r2" style="width:308px;"></div></div>
@@ -842,6 +852,12 @@ function setHTML(pid){const p=pid+'_';return`
   <div class="fg" style="margin-bottom:7px;"><label class="lbl">발신자 계정 (userId)</label><input id="${p}nw_uid" placeholder="user@company.com"></div>
   <div class="fl"><button class="btn btn-s btn-sm" onclick="saveNWSettings('${pid}')">저장</button><button class="btn btn-s btn-sm" onclick="testNWMail('${pid}')">테스트</button></div>
   <div id="${p}nw_status" style="font-size:11px;margin-top:6px;color:var(--m);"></div>
+</div>
+<div class="card">
+  <div class="ctitle">구글폼 응답 수집 (Apps Script)</div>
+  <div class="infobox">한 번만 입력하면 됩니다. 매달 바꿀 필요 없습니다.</div>
+  <div class="fg" style="margin-bottom:7px;"><label class="lbl">Apps Script URL (전체 공통)</label><input id="${p}gscript_url" placeholder="https://script.google.com/macros/s/..."></div>
+  <button class="btn btn-s btn-sm" onclick="saveScriptSettings('${pid}')">저장</button>
 </div>
 <div class="card">
   <div class="ctitle">카카오톡 API</div>
@@ -1245,26 +1261,26 @@ function biz4ToggleGForm(pid){
 }
 async function importGFormAuto(pid){
   const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
-  const biz=BIZ.find(b=>b.id===s.bizId);
-  const url=biz&&biz.sheet;if(!url){alert('업체 관리에서 Apps Script URL을 먼저 입력해주세요.');return;}
+  const scriptUrl=localStorage.getItem('mm_gscript')||'';
+  if(!scriptUrl){alert('설정 탭에서 Apps Script URL을 먼저 입력해주세요.');return;}
   toast('불러오는 중...','var(--m)');
   try{
-    const resp=await fetch(url);if(!resp.ok)throw new Error();
+    const resp=await fetch(scriptUrl+'?bizId='+encodeURIComponent(s.bizId));if(!resp.ok)throw new Error();
     const data=await resp.json();
     if(!data.values||data.values.length<2){toast('응답 데이터가 없습니다.','var(--a3)');return;}
+    // 컬럼: [0]타임스탬프 [1]성함 [2]연락처 [3]이메일 [4]블로그주소
     const rows=data.values.slice(1);let matched=0;
     for(const row of rows){
-      const csvNick=(row[2]||'').toString().trim(),csvEmail=(row[4]||'').toString().trim();
-      let entry=null;
-      if(csvNick)entry=BIZB.find(e=>e.bizId===s.bizId&&e.nick===csvNick);
-      if(!entry&&csvEmail)entry=BIZB.find(e=>e.bizId===s.bizId&&e.email===csvEmail);
+      const csvEmail=(row[3]||'').toString().trim(),csvUrl=(row[4]||'').toString().trim();
+      let entry=BIZB.find(e=>e.bizId===s.bizId&&e.email&&e.email===csvEmail);
+      if(!entry&&csvUrl)entry=BIZB.find(e=>e.bizId===s.bizId&&e.url&&e.url===csvUrl);
       if(entry){
         const updates={};
         if(row[1])updates.name=row[1].toString().trim();
-        if(row[3])updates.phone=row[3].toString().trim();
+        if(row[2])updates.phone=row[2].toString().trim();
         if(csvEmail)updates.email=csvEmail;
         if(row[0])updates.timestamp=row[0].toString();
-        if(row[5])updates.url=row[5].toString().trim();
+        if(csvUrl)updates.url=csvUrl;
         updates.status='구글폼요청';
         await fsUpd('bizBloggers',entry.id,updates);matched++;
       }
@@ -1301,16 +1317,83 @@ async function importGFormCSV(pid){
   const ta=pE(pid,'gform_paste')||E(mk(pid,'gform_paste'));const text=(ta&&ta.value||'').trim();
   if(!text){alert('CSV 내용 입력 또는 파일을 선택해주세요.');return;}
   const lines=text.split(/\r?\n/).filter(l=>l.trim());if(lines.length<2){alert('데이터가 없습니다.');return;}
+  // 컬럼: [0]타임스탬프 [1]성함 [2]연락처 [3]이메일 [4]블로그주소
   const rows=lines.slice(1).map(parseCSVLine);let matched=0;
   for(const row of rows){
-    const csvNick=(row[2]||'').trim(),csvEmail=(row[4]||'').trim();
-    let entry=null;
-    if(csvNick)entry=BIZB.find(e=>e.bizId===s.bizId&&e.nick===csvNick);
-    if(!entry&&csvEmail)entry=BIZB.find(e=>e.bizId===s.bizId&&e.email===csvEmail);
-    if(entry){const updates={};if(row[1]&&row[1].trim())updates.name=row[1].trim();if(row[3]&&row[3].trim())updates.phone=row[3].trim();if(csvEmail)updates.email=csvEmail;if(row[0])updates.timestamp=row[0];if(row[5])updates.url=row[5].trim();updates.status='구글폼요청';await fsUpd('bizBloggers',entry.id,updates);matched++;}
+    const csvEmail=(row[3]||'').trim(),csvUrl=(row[4]||'').trim();
+    let entry=BIZB.find(e=>e.bizId===s.bizId&&e.email&&e.email===csvEmail);
+    if(!entry&&csvUrl)entry=BIZB.find(e=>e.bizId===s.bizId&&e.url&&e.url===csvUrl);
+    if(entry){const updates={};if(row[1]&&row[1].trim())updates.name=row[1].trim();if(row[2]&&row[2].trim())updates.phone=row[2].trim();if(csvEmail)updates.email=csvEmail;if(row[0])updates.timestamp=row[0];if(csvUrl)updates.url=csvUrl;updates.status='구글폼요청';await fsUpd('bizBloggers',entry.id,updates);matched++;}
   }
   const res=pE(pid,'gform_result')||E(mk(pid,'gform_result'));if(res)res.textContent=`✓ ${matched}명 매칭 완료 (${rows.length}행)`;
   toast(`✓ ${matched}명 매칭됨`,'var(--a2)');
+}
+
+function togglePostFormPanel(pid){
+  const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
+  s.postFormOpen=!s.postFormOpen;
+  const el=pE(pid,'biz4_postformpanel')||E(mk(pid,'biz4_postformpanel'));if(el)el.style.display=s.postFormOpen?'block':'none';
+  if(s.postFormOpen){const ab=pE(pid,'postform_ambiguous')||E(mk(pid,'postform_ambiguous'));if(ab){ab.style.display='none';ab.innerHTML='';}}
+}
+async function importPostForm(pid){
+  const s=getBiz4S(pid);if(!s.bizId){alert('업체를 먼저 선택해주세요.');return;}
+  const biz=BIZ.find(b=>b.id===s.bizId);
+  const postFormUrl=biz&&biz.postForm;if(!postFormUrl){alert('업체 관리에서 포스팅 확인 구글폼 링크를 먼저 입력해주세요.');return;}
+  // 포스팅 확인 폼은 Apps Script가 아닌 직접 시트 URL → Apps Script를 통해 읽기
+  const scriptUrl=localStorage.getItem('mm_gscript')||'';
+  if(!scriptUrl){alert('설정 탭에서 Apps Script URL을 먼저 입력해주세요.');return;}
+  toast('포스팅 확인폼 불러오는 중...','var(--m)');
+  try{
+    const resp=await fetch(scriptUrl+'?type=post&bizId='+encodeURIComponent(s.bizId));if(!resp.ok)throw new Error();
+    const data=await resp.json();
+    if(!data.values||data.values.length<2){toast('응답 데이터가 없습니다.','var(--a3)');return;}
+    // 컬럼: [0]타임스탬프 [1]성명 [2]주민번호 [3]은행명 [4]계좌번호 [5]예금주명 [6]포스팅링크
+    const rows=data.values.slice(1);
+    const ambiguous=[];let matched=0;
+    for(const row of rows){
+      const csvName=(row[1]||'').toString().trim();if(!csvName)continue;
+      const candidates=BIZB.filter(e=>e.bizId===s.bizId&&(e.name||'').trim()===csvName);
+      if(candidates.length===0)continue;
+      const updates={};
+      if(row[2])updates.ssn=row[2].toString().trim();
+      if(row[3]&&row[4])updates.accountNum=(row[3].toString().trim()+' / '+row[4].toString().trim()+(row[5]?' / '+row[5].toString().trim():''));
+      else if(row[4])updates.accountNum=row[4].toString().trim();
+      if(row[6])updates.postUrl=row[6].toString().trim();
+      if(candidates.length===1){await fsUpd('bizBloggers',candidates[0].id,updates);matched++;}
+      else{ambiguous.push({name:csvName,candidates,updates});}
+    }
+    if(ambiguous.length>0){renderPostFormAmbiguous(pid,ambiguous,matched);}
+    else{toast(`✓ ${matched}명 매칭 완료`,'var(--a2)');}
+  }catch(e){
+    toast('❌ 불러오기 실패 — Apps Script URL을 확인해주세요.','var(--dn)');
+  }
+}
+function renderPostFormAmbiguous(pid,ambiguous,alreadyMatched){
+  const ab=pE(pid,'postform_ambiguous')||E(mk(pid,'postform_ambiguous'));if(!ab)return;
+  ab.style.display='block';
+  ab.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--dn);margin-bottom:6px;">⚠️ 동명이인 ${ambiguous.length}건 — 직접 선택해주세요</div>`+
+  ambiguous.map((item,i)=>`
+    <div style="background:var(--sf2);border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid var(--bd);">
+      <div style="font-size:11px;font-weight:700;margin-bottom:4px;">이름: ${x(item.name)} (${item.candidates.length}명)</div>
+      ${item.candidates.map(c=>`
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+          <span style="font-size:11px;flex:1;">${x(c.nick)||'-'} | ${x(c.email)||'-'} | ${x(c.url||'').slice(0,30)||'-'}</span>
+          <button class="btn btn-g btn-xs" onclick="resolvePostFormAmb('${pid}','${c.id}',${i})">선택</button>
+        </div>`).join('')}
+    </div>`).join('');
+  if(alreadyMatched>0)toast(`✓ ${alreadyMatched}명 자동 매칭, 동명이인 ${ambiguous.length}건 확인 필요`,'var(--a3)');
+  // 나중에 resolvePostFormAmb에서 접근하기 위해 데이터 저장
+  const s=getBiz4S(pid);s._postAmbiguous=ambiguous;s._postAlreadyMatched=alreadyMatched;
+}
+async function resolvePostFormAmb(pid,bloggerId,ambIdx){
+  const s=getBiz4S(pid);if(!s._postAmbiguous)return;
+  const item=s._postAmbiguous[ambIdx];if(!item)return;
+  await fsUpd('bizBloggers',bloggerId,item.updates);
+  s._postAmbiguous.splice(ambIdx,1);s._postAlreadyMatched=(s._postAlreadyMatched||0)+1;
+  if(s._postAmbiguous.length===0){
+    const ab=pE(pid,'postform_ambiguous')||E(mk(pid,'postform_ambiguous'));if(ab){ab.style.display='none';ab.innerHTML='';}
+    toast(`✓ 전체 매칭 완료 (${s._postAlreadyMatched}명)`,'var(--a2)');
+  }else{renderPostFormAmbiguous(pid,s._postAmbiguous,s._postAlreadyMatched);}
 }
 
 // ════ 메일 ════
@@ -1693,7 +1776,7 @@ async function submitBiz(pid){
   const name=(pE(pid,'b_name')||E(mk(pid,'b_name'))||{value:''}).value.trim();if(!name){alert('업체명을 입력해주세요.');return;}
   const editId=(pE(pid,'b_editid')||E(mk(pid,'b_editid'))||{value:''}).value;
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value.trim();
-  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),reportDay:gv('b_report'),url:gv('b_url'),form:gv('b_form'),sheet:gv('b_sheet'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
+  const entry={name,reg:gv('b_reg'),contractStart:gv('b_cs'),contractEnd:gv('b_ce'),reportDay:gv('b_report'),url:gv('b_url'),form:gv('b_form'),postForm:gv('b_postform'),visit:gv('b_visit'),r1:gv('b_r1'),r2:gv('b_r2'),r3:gv('b_r3')};
   const id=editId||uid();
   // 즉시 로컬 업데이트 (Firebase 응답 기다리지 않고)
   const idx=BIZ.findIndex(b=>b.id===id);
@@ -1716,7 +1799,7 @@ async function submitBiz(pid){
 function editBiz(pid,id){
   const b=BIZ.find(b=>b.id===id);if(!b)return;
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
-  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_report',b.reportDay);sv('b_url',b.url);sv('b_form',b.form);sv('b_sheet',b.sheet);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
+  sv('b_name',b.name);sv('b_reg',b.reg);sv('b_cs',b.contractStart);sv('b_ce',b.contractEnd);sv('b_report',b.reportDay);sv('b_url',b.url);sv('b_form',b.form);sv('b_postform',b.postForm);sv('b_visit',b.visit);sv('b_r1',b.r1);sv('b_r2',b.r2);sv('b_r3',b.r3);
   const editid=pE(pid,'b_editid')||E(mk(pid,'b_editid'));if(editid)editid.value=id;
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='✏️ 업체 수정';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='저장';
@@ -1809,7 +1892,7 @@ async function delBiz(pid,id){
   toast('삭제됨','var(--dn)');
 }
 function cancelBizEdit(pid){
-  ['b_name','b_reg','b_cs','b_ce','b_report','b_url','b_form','b_sheet','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
+  ['b_name','b_reg','b_cs','b_ce','b_report','b_url','b_form','b_postform','b_visit','b_r1','b_r2','b_r3','b_editid'].forEach(base=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value='';});
   const ft=pE(pid,'bizm_ftitle')||E(mk(pid,'bizm_ftitle'));if(ft)ft.textContent='⚡ 업체 추가';
   const sb=pE(pid,'b_savebtn')||E(mk(pid,'b_savebtn'));if(sb)sb.textContent='+ 업체 추가';
   const kwl=pE(pid,'b_kwlist')||E(mk(pid,'b_kwlist'));if(kwl)kwl.innerHTML='<div style="color:var(--m);font-size:11px;padding:6px 0;">업체를 저장하면 키워드를 추가할 수 있습니다.</div>';
@@ -1912,6 +1995,12 @@ function renderSettings(pid){
   const sv=(base,v)=>{const el=pE(pid,base)||E(mk(pid,base));if(el)el.value=ss(v);};
   sv('nw_uid',settings.userId);
   const kt=pE(pid,'kakao_token')||E(mk(pid,'kakao_token'));if(kt)kt.value=localStorage.getItem('mm_kakao')||'';
+  const gs=pE(pid,'gscript_url')||E(mk(pid,'gscript_url'));if(gs)gs.value=localStorage.getItem('mm_gscript')||'';
+}
+function saveScriptSettings(pid){
+  const el=pE(pid,'gscript_url')||E(mk(pid,'gscript_url'));
+  localStorage.setItem('mm_gscript',(el&&el.value||'').trim());
+  toast('✓ Apps Script URL 저장됨','var(--a2)');
 }
 function saveNWSettings(pid){
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value;
