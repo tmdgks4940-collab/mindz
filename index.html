@@ -849,10 +849,11 @@ function setHTML(pid){const p=pid+'_';return`
 <div class="card"><div class="ctitle">Firebase 상태</div><div id="${p}fb_status" class="notice n-i" style="font-size:12px;">확인 중...</div></div>
 <div class="card">
   <div class="ctitle">네이버웍스 메일 API</div>
-  <div class="infobox">발신자 계정(userId)만 입력하면 됩니다. 토큰은 자동 관리됩니다.</div>
+  <div class="infobox">발신자 계정(userId)을 입력하고, 아래 버튼으로 네이버웍스 계정 인증을 완료하세요.</div>
   <div class="fg" style="margin-bottom:7px;"><label class="lbl">발신자 계정 (userId)</label><input id="${p}nw_uid" placeholder="user@company.com"></div>
-  <div class="fl"><button class="btn btn-s btn-sm" onclick="saveNWSettings('${pid}')">저장</button><button class="btn btn-s btn-sm" onclick="testNWMail('${pid}')">테스트</button></div>
-  <div id="${p}nw_status" style="font-size:11px;margin-top:6px;color:var(--m);"></div>
+  <div class="fl" style="margin-bottom:8px;"><button class="btn btn-s btn-sm" onclick="saveNWSettings('${pid}')">저장</button><button class="btn btn-s btn-sm" onclick="testNWMail('${pid}')">테스트</button><button class="btn btn-p btn-sm" onclick="window.open('https://mindz-mail-proxy.tmdgks4940.workers.dev/auth','_blank')">🔑 네이버웍스 인증</button></div>
+  <div id="${p}nw_token_status" style="font-size:12px;margin-top:6px;padding:8px 10px;border-radius:6px;background:#f8f9fa;display:none;"></div>
+  <div id="${p}nw_status" style="font-size:11px;margin-top:4px;color:var(--m);"></div>
 </div>
 <div class="card">
   <div class="ctitle">구글폼 응답 수집 (Apps Script)</div>
@@ -1542,16 +1543,18 @@ async function sendMailBulk(pid){
   toast(`${sent}명 발송 완료`,'var(--a2)');
 }
 
-// 변경 후 - Worker 호출
 async function sendNWMail(settings, to, subject, body) {
   const res = await fetch('https://mindz-mail-proxy.tmdgks4940.workers.dev/send-mail', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      userId: settings.userId,
       mail: { to, subject, body }
     })
   });
-  if (!res.ok) throw new Error(await res.text());
+  const data = await res.json().catch(()=>({}));
+  if (data.need_reauth) throw new Error('네이버웍스 인증이 만료되었습니다. 설정 탭에서 [🔑 네이버웍스 인증] 버튼을 눌러 재인증해주세요.');
+  if (!res.ok) throw new Error(data.error || res.statusText);
 }
 
 function fillGreetingList(pid){
@@ -2003,6 +2006,7 @@ function renderSettings(pid){
   sv('nw_uid',settings.userId);
   const kt=pE(pid,'kakao_token')||E(mk(pid,'kakao_token'));if(kt)kt.value=localStorage.getItem('mm_kakao')||'';
   const gs=pE(pid,'gscript_url')||E(mk(pid,'gscript_url'));if(gs)gs.value=localStorage.getItem('mm_gscript')||'';
+  loadNWTokenStatus(pid);
 }
 function saveScriptSettings(pid){
   const el=pE(pid,'gscript_url')||E(mk(pid,'gscript_url'));
@@ -2013,6 +2017,31 @@ function saveNWSettings(pid){
   const gv=(base)=>(pE(pid,base)||E(mk(pid,base))||{value:''}).value;
   const settings={userId:gv('nw_uid')};
   localStorage.setItem('mm_nw',JSON.stringify(settings));toast('✓ 네이버웍스 설정 저장됨','var(--a2)');
+}
+async function loadNWTokenStatus(pid){
+  const el=pE(pid,'nw_token_status')||E(mk(pid,'nw_token_status'));
+  if(!el)return;
+  try{
+    const res=await fetch('https://mindz-mail-proxy.tmdgks4940.workers.dev/token-status');
+    const d=await res.json();
+    el.style.display='block';
+    if(!d.authorized){
+      const msg=d.auth_error==='REFRESH_EXPIRED'?'Refresh Token이 만료되었습니다. 재인증이 필요합니다.':
+                d.auth_error==='REFRESH_FAILED'?'토큰 갱신에 실패했습니다. 재인증이 필요합니다.':
+                '인증이 필요합니다. 위 [🔑 네이버웍스 인증] 버튼을 눌러주세요.';
+      el.style.background='#fff3f3';el.style.color='var(--dn)';
+      el.innerHTML=`⚠️ ${msg}`;
+    } else {
+      const days=d.refresh_token_days_left;
+      const color=days<=7?'var(--dn)':days<=30?'#e67e22':'var(--a2)';
+      el.style.background=days<=7?'#fff3f3':days<=30?'#fffbf0':'#f0faf5';
+      el.style.color=color;
+      el.innerHTML=`✓ 인증됨 &nbsp;|&nbsp; Refresh Token 만료까지 <b>D-${days}</b>`;
+    }
+  }catch(e){
+    el.style.display='block';el.style.background='#f8f9fa';el.style.color='var(--m)';
+    el.innerHTML='토큰 상태를 확인할 수 없습니다.';
+  }
 }
 async function testNWMail(pid){
   const settings=JSON.parse(localStorage.getItem('mm_nw')||'{}');
