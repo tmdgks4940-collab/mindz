@@ -1542,13 +1542,16 @@ async function sendMailBulk(pid){
   toast(`${sent}명 발송 완료`,'var(--a2)');
 }
 
-async function sendNWMail(settings,to,subject,body){
-  const res=await fetch('https://mindz-mail-proxy.tmdgks4940.workers.dev/send-mail',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({userId:settings.userId,mail:{to,subject,body,contentType:'text',isSaveSentMail:true,isSendSeparately:false}})
+// 변경 후 - Worker 호출
+async function sendNWMail(settings, to, subject, body) {
+  const res = await fetch('https://mindz-mail-proxy.tmdgks4940.workers.dev/send-mail', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      mail: { to, subject, body }
+    })
   });
-  if(!res.ok)throw new Error(await res.text());
+  if (!res.ok) throw new Error(await res.text());
 }
 
 function fillGreetingList(pid){
